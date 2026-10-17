@@ -1,0 +1,1601 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<title>TOLLEST Commande</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#D5412A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Mise en page : bandeau pleine largeur (logo, accueil, décor de fête), bandeau promo, filtres collants,
+   grille de plats, barre de panier, tiroirs (fiche plat, panier, commande, administration). */
+:root {
+  --bg: #FBF5EE;
+  --surface: #FFFFFF;
+  --fg: #2B1B15;
+  --muted: #76665D;
+  --line: #EBDFD3;
+  --soft: #F6E9DC;
+  --accent: #C93A1D;
+  --accent-fg: #FFFFFF;
+  --accent-text: #B5311A;
+  --hero-a: #D5412A;
+  --hero-b: #8A2212;
+  --err: #B3261E;
+  --good: #2E7D4F;
+  --gold: #F1A33B;
+  --shadow: 0 6px 20px rgba(60, 25, 10, .14);
+  --font-display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+  --font-body: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #171009; --surface: #241913; --fg: #F7EDE5; --muted: #BBA99E; --line: #3B2C24; --soft: #32231B;
+    --accent: #D9462A; --accent-text: #FF7A59; --hero-a: #B8341F; --hero-b: #5E160B; --err: #FF8A80; --good: #4FAE78;
+    --shadow: 0 6px 20px rgba(0, 0, 0, .5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #171009; --surface: #241913; --fg: #F7EDE5; --muted: #BBA99E; --line: #3B2C24; --soft: #32231B;
+  --accent: #D9462A; --accent-text: #FF7A59; --hero-a: #B8341F; --hero-b: #5E160B; --err: #FF8A80; --good: #4FAE78;
+  --shadow: 0 6px 20px rgba(0, 0, 0, .5);
+  color-scheme: dark;
+}
+/* Thèmes de fête choisis par l'administrateur (après les blocs sombres pour l'emporter) */
+:root[data-event="decembre"] { --hero-a: #1E7A4C; --hero-b: #0E3F29; --accent: #C0281F; --accent-text: color-mix(in srgb, var(--accent) 62%, var(--fg)); }
+:root[data-event="nouvelan"] { --hero-a: #2E2950; --hero-b: #0E0C1D; --accent: #946106; --accent-text: color-mix(in srgb, var(--accent) 62%, var(--fg)); }
+:root[data-event="ramadan"] { --hero-a: #14506E; --hero-b: #09283D; --accent: #0F7A6B; --accent-text: color-mix(in srgb, var(--accent) 62%, var(--fg)); }
+
+[hidden] { display: none !important; }
+*, *::before, *::after { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.45; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+body.lock { overflow: hidden; }
+button { font: inherit; color: inherit; cursor: pointer; }
+h1, h2, h3, p { margin: 0; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+.in {
+  max-width: 560px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Bandeau */
+.hero { background: linear-gradient(160deg, var(--hero-a), var(--hero-b)); color: #fff; border-radius: 0 0 32px 32px; padding-block: 26px 36px; }
+.hero .in { position: relative; }
+.logo { display: inline-flex; align-items: center; background: #fff; border-radius: 22px; padding: 8px 16px; box-shadow: var(--shadow); }
+.logo img { display: block; height: 58px; width: auto; max-width: 100%; }
+.topbtns { position: absolute; top: 0; right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.adm { display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,.55); background: rgba(255,255,255,.16); color: #fff; border-radius: 999px; padding: 8px 14px; font-weight: 700; }
+.adm b { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--gold); color: #3A1608; font-size: .75rem; }
+.deco { margin-top: 16px; font-size: 1.35rem; letter-spacing: .2em; }
+.hello { margin-top: 14px; font: 800 2rem/1.1 var(--font-display); text-wrap: balance; }
+.sub { margin-top: 6px; opacity: .92; }
+.banner { margin-top: 14px; }
+.banner > .plain { padding: 12px 14px; border-radius: 16px; background: var(--soft); border: 1px solid var(--line); color: var(--fg); font-weight: 700; text-align: center; text-wrap: balance; overflow-wrap: anywhere; }
+
+/* Filtres */
+.chips { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 12px 8px; }
+.chiprow { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-block: 2px; }
+.chiprow::-webkit-scrollbar { display: none; }
+.chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 16px; font-weight: 500; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); font-weight: 700; }
+
+/* Menu */
+main { padding-bottom: 150px; }
+.cat { margin-top: 18px; }
+.cat-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; font: 800 .8rem/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.cat-h span { font-weight: 500; letter-spacing: .04em; text-transform: none; }
+.cat.promo .cat-h { color: var(--accent-text); }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.card { display: flex; flex-direction: column; text-align: left; padding: 0; border: 1px solid var(--line); background: var(--surface); border-radius: var(--rad, 22px); overflow: hidden; min-width: 0; }
+.card:active { transform: scale(.985); }
+.tile { position: relative; display: grid; place-items: center; aspect-ratio: 4 / 3; max-width: 100%; overflow: hidden; background: linear-gradient(150deg, hsl(var(--h) 72% 58%), hsl(var(--h) 68% 38%)); }
+.tile.ph::before { content: ""; position: absolute; left: 50%; top: 50%; width: 56%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,.96) 0 52%, rgba(255,255,255,.5) 53% 100%); }
+.tile b { position: relative; font: 800 1.9rem/1 var(--font-display); color: hsl(var(--h) 65% 28%); }
+.tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tag { position: absolute; top: 8px; left: 8px; z-index: 1; background: var(--gold); color: #3A1608; font-weight: 800; font-size: .8rem; border-radius: 999px; padding: 4px 10px; }
+.cbody { display: flex; flex-direction: column; gap: 4px; padding: 12px 12px 14px; min-width: 0; flex: 1; }
+.cname { font: 700 1rem/1.2 var(--font-display); text-wrap: balance; }
+.cdesc { color: var(--muted); font-size: .85rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cprice { margin-top: auto; padding-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cprice small { font-weight: 500; color: var(--muted); }
+.old { text-decoration: line-through; color: var(--muted); font-weight: 500; font-size: .8rem; display: block; }
+.until { display: block; font-size: .72rem; font-weight: 700; color: var(--accent-text); }
+.plus { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: var(--accent-fg); font-size: 1.2rem; line-height: 1; }
+.note { margin-top: 26px; color: var(--muted); font-size: .85rem; }
+
+/* Barre de panier */
+.bar { position: fixed; inset: auto 0 0 0; z-index: 20; padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); pointer-events: none; }
+.bar button { pointer-events: auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; max-width: 560px; margin: 0 auto; border: 0; border-radius: 20px; background: var(--accent); color: var(--accent-fg); padding: 15px 18px; font-weight: 700; box-shadow: var(--shadow); font-variant-numeric: tabular-nums; }
+.bar .cnt { display: inline-grid; place-items: center; min-width: 26px; height: 26px; padding: 0 7px; border-radius: 13px; background: #fff; color: #2B1B15; margin-right: 10px; font-size: .85rem; }
+
+.toast { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 60; background: var(--fg); color: var(--bg); padding: 9px 16px; border-radius: 999px; font-weight: 500; box-shadow: var(--shadow); max-width: calc(100% - 32px); text-align: center; }
+
+/* Tiroir */
+.scrim { position: fixed; inset: 0; z-index: 30; background: rgba(20, 8, 2, .55); }
+.sheet { position: fixed; left: 50%; bottom: 0; z-index: 40; transform: translateX(-50%); width: min(560px, 100%); max-height: 92%; display: flex; flex-direction: column; background: var(--bg); border-radius: 28px 28px 0 0; outline: none; animation: rise .25s ease-out; }
+.sheet.tall { height: 92%; }
+@keyframes rise { from { transform: translate(-50%, 28px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
+.sheet-head h2 { font: 800 1.35rem/1.15 var(--font-display); text-wrap: balance; }
+.x { flex: none; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--soft); }
+.sheet-body { overflow-y: auto; flex: 1; padding: 6px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 16px; }
+.sheet-foot { display: flex; align-items: center; gap: 12px; padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); border-top: 1px solid var(--line); background: var(--bg); }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+.grp { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.grp > legend, .lg { padding: 0; margin-bottom: 8px; font: 800 .78rem/1 var(--font-body); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: block; }
+.opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; cursor: pointer; }
+.opt input { accent-color: var(--accent); width: 18px; height: 18px; margin: 0 8px 0 0; vertical-align: -3px; }
+.pr { font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+input[type="text"], input[type="tel"], input[type="number"], input[type="date"], input[type="time"], select, textarea { width: 100%; font: inherit; font-size: 16px; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+textarea { resize: vertical; }
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 4px; background: var(--soft); border-radius: 16px; }
+.seg label { position: relative; min-width: 0; }
+.seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.seg span { display: block; text-align: center; padding: 10px 4px; border-radius: 12px; font-weight: 500; font-size: .9rem; }
+.seg input:checked + span { background: var(--surface); font-weight: 700; box-shadow: 0 1px 4px rgba(60, 25, 10, .15); }
+.seg input:focus-visible + span { outline: 3px solid var(--gold); }
+.btn { flex: 1; border: 0; border-radius: 16px; background: var(--accent); color: var(--accent-fg); padding: 15px 18px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-variant-numeric: tabular-nums; text-align: left; }
+.btn.center { justify-content: center; text-align: center; }
+.btn.ghost { background: var(--soft); color: var(--fg); }
+.btn.sm { flex: 0 0 auto; padding: 9px 14px; font-size: .9rem; border-radius: 12px; }
+.btn[disabled] { opacity: .6; cursor: default; }
+a.btn { text-decoration: none; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; flex: none; }
+.stepper button { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); font-size: 1.1rem; line-height: 1; }
+.stepper output { min-width: 28px; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.line { display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+.line .t { min-width: 0; flex: 1; }
+.line .t b { font-family: var(--font-display); font-size: 1rem; }
+.line .t div { color: var(--muted); font-size: .85rem; overflow-wrap: anywhere; }
+.line .r { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rm { border: 0; background: none; color: var(--accent-text); font-size: .8rem; padding: 0; text-decoration: underline; }
+.sum { display: flex; flex-direction: column; gap: 6px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; font-variant-numeric: tabular-nums; }
+.sum div { display: flex; justify-content: space-between; gap: 12px; }
+.sum .tot { font-weight: 800; font-size: 1.1rem; padding-top: 6px; border-top: 1px solid var(--line); }
+.err { color: var(--err); font-weight: 500; min-height: 1.2em; }
+.empty { text-align: center; padding: 28px 8px; color: var(--muted); }
+.order-no { font: 800 2.2rem/1 var(--font-display); letter-spacing: .03em; }
+.recap { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .85rem; background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 14px; margin: 0; font-family: var(--font-body); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+.row > * { flex: 1 1 160px; }
+.steps { display: flex; gap: 6px; margin-top: 10px; }
+.steps i { flex: 1; height: 6px; border-radius: 3px; background: var(--line); }
+.steps i.on { background: var(--accent); }
+.stat { padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; }
+.stat b { font-family: var(--font-display); font-size: 1.1rem; }
+
+/* Administration */
+.tabs { display: flex; overflow-x: auto; scrollbar-width: none; gap: 6px; padding: 4px; background: var(--soft); border-radius: 16px; margin: 4px max(16px, env(safe-area-inset-right, 0px)) 8px max(16px, env(safe-area-inset-left, 0px)); }
+.tabs button { flex: none; white-space: nowrap; border: 0; background: none; padding: 10px 14px; border-radius: 12px; font-weight: 500; font-size: .88rem; }
+.tabs button[aria-selected="true"] { background: var(--surface); font-weight: 700; box-shadow: 0 1px 4px rgba(60, 25, 10, .15); }
+.ord { display: flex; flex-direction: column; gap: 8px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; min-width: 0; }
+.ord-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ord-h b { font: 800 1.05rem/1 var(--font-display); }
+.ord ul { margin: 0; padding-left: 18px; overflow-wrap: anywhere; }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: var(--soft); font-size: .78rem; font-weight: 700; }
+.pill.new { background: var(--accent); color: var(--accent-fg); }
+.pill.ok { background: var(--good); color: #fff; }
+.pill.no { background: transparent; border: 1px solid var(--err); color: var(--err); }
+.pill.test { background: var(--gold); color: #3A1608; }
+.acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.emo { display: flex; gap: 6px; flex-wrap: wrap; }
+.emo button { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 6px 10px; font-size: 1.1rem; line-height: 1; }
+.g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.prow, .zrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; min-width: 0; }
+.prow span { min-width: 0; overflow-wrap: anywhere; }
+.zrow input[type="text"] { flex: 1 1 auto; min-width: 0; }
+.zrow input[type="number"] { flex: 0 0 96px; }
+.chk { display: flex; align-items: center; gap: 10px; }
+.chk input { width: 20px; height: 20px; accent-color: var(--accent); margin: 0; }
+
+.card.off { opacity: .65; }
+.card.off .plus { display: none; }
+.tag.off { background: var(--fg); color: var(--bg); }
+.unav { display: block; font-size: .78rem; font-weight: 700; color: var(--err); }
+.mrow { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; min-width: 0; }
+.thumb { flex: none; width: 48px; height: 48px; border-radius: 12px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(150deg, hsl(var(--h) 72% 58%), hsl(var(--h) 68% 38%)); color: #fff; font: 800 1.2rem/1 var(--font-display); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mrow .mt { flex: 1; min-width: 0; }
+.mrow .mt b { display: block; font-family: var(--font-display); overflow-wrap: anywhere; }
+.mrow .mt span { font-size: .82rem; color: var(--muted); }
+.mrow .side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+.ephoto { display: flex; align-items: center; gap: 12px; }
+.ephoto .thumb { width: 84px; height: 84px; border-radius: 16px; font-size: 2rem; }
+.file { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.szrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 14px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; }
+.szrow input { width: 120px; }
+
+/* Affiches et vidéos entre les catégories */
+.ad { position: relative; margin: 18px 0 0; border-radius: 22px; overflow: hidden; background: var(--soft); border: 1px solid var(--line); }
+.ad img, .ad video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.ad figcaption { padding: 10px 14px; font-weight: 700; text-wrap: balance; overflow-wrap: anywhere; }
+.ad .hint { position: absolute; top: 10px; right: 10px; padding: 4px 10px; border-radius: 999px; background: rgba(0, 0, 0, .55); color: #fff; font-size: .75rem; font-weight: 500; pointer-events: none; }
+
+/* Carte de fidélité */
+.reward { display: flex; align-items: center; gap: 14px; padding: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; min-width: 0; }
+.reward .pic { flex: none; width: 76px; height: 76px; border-radius: 14px; overflow: hidden; display: grid; place-items: center; background: linear-gradient(150deg, var(--hero-a), var(--hero-b)); color: #fff; }
+.reward .pic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.reward b { font: 800 1.05rem/1.2 var(--font-display); overflow-wrap: anywhere; }
+.lcard { padding: 16px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+.dots { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px; }
+.dot { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 2px dashed var(--line); color: var(--muted); font-weight: 700; overflow: hidden; }
+.dot.on { background: var(--accent); border: 2px solid var(--accent); color: var(--accent-fg); }
+.dot.gift { width: 50px; height: 50px; border-style: solid; border-color: var(--gold); color: var(--accent-text); }
+.dot.gift.on { background: var(--gold); border-color: var(--gold); color: #3A1608; }
+.dot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.stats div { padding: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; display: flex; flex-direction: column; gap: 2px; }
+.stats b { font: 800 1.6rem/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.stats span { color: var(--muted); font-size: .82rem; }
+.rank { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.rank.me { border-color: var(--accent); }
+.rank .pos { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--soft); font-weight: 800; }
+.rank .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+
+/* Actions rapides, réglages, texte défilant, carte à gratter, avis */
+.gift { display: block; width: 100%; margin-top: 14px; border: 0; border-radius: 16px; padding: 14px 16px; background: var(--gold); color: #3A1608; font-weight: 800; text-align: center; box-shadow: var(--shadow); animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(1.02); } }
+.quick { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.mq { overflow: hidden; border-radius: 16px; padding: 12px 0; font-weight: 800; font-size: 1.05rem; }
+.mqt { display: flex; width: max-content; animation: mq var(--d, 16s) linear infinite; }
+.mqh { display: block; flex: none; white-space: nowrap; }
+.mqh .rep { padding-right: 2.5em; }
+@keyframes mq { to { transform: translateX(-50%); } }
+.mqs { padding: 12px 14px; border-radius: 16px; font-weight: 800; text-align: center; text-wrap: balance; overflow-wrap: anywhere; }
+.ad .mq, .ad .mqs { border-radius: 0; }
+.shut { margin-top: 16px; padding: 12px 14px; border-radius: 16px; background: var(--fg); color: var(--bg); text-align: center; text-wrap: balance; }
+.lay-1 .grid, .lay-list .grid { grid-template-columns: minmax(0, 1fr); }
+.lay-1 .tile { aspect-ratio: 16 / 10; }
+.lay-list .card { flex-direction: row; align-items: stretch; }
+.lay-list .tile { flex: none; width: 112px; aspect-ratio: auto; min-height: 104px; }
+.nodesc .cdesc { display: none; }
+.scw { position: relative; width: 100%; max-width: 360px; aspect-ratio: 16 / 10; margin: 0 auto; border-radius: 20px; overflow: hidden; background: linear-gradient(150deg, var(--hero-a), var(--hero-b)); box-shadow: var(--shadow); }
+.scp { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 14px; text-align: center; color: #fff; }
+.scp span { font-size: 2.2rem; line-height: 1; }
+.scp b { font: 800 1.25rem/1.2 var(--font-display); text-wrap: balance; overflow-wrap: anywhere; }
+.scw canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: grab; transition: opacity .6s; }
+.prize { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; background: var(--soft); border: 1px dashed var(--accent); }
+.prize b { font: 800 1.1rem/1.2 var(--font-display); overflow-wrap: anywhere; }
+.code { font: 800 1.5rem/1 var(--font-display); letter-spacing: .12em; user-select: all; padding: 10px 12px; background: var(--surface); border-radius: 12px; text-align: center; border: 1px solid var(--line); }
+.fbe button { font-size: 1.5rem; padding: 8px 12px; }
+.fbe button[aria-pressed="true"] { border-color: var(--accent); background: var(--soft); box-shadow: 0 0 0 2px var(--accent); }
+.fbv { padding: 10px 12px; border-radius: 14px; background: var(--soft); overflow-wrap: anywhere; }
+.swrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.sw { width: 38px; height: 38px; border-radius: 50%; border: 3px solid var(--line); padding: 0; }
+.sw[aria-pressed="true"] { border-color: var(--fg); box-shadow: 0 0 0 2px var(--bg) inset; }
+.pres { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pre { border: 0; border-radius: 14px; padding: 14px 10px; color: #fff; font-weight: 700; text-shadow: 0 1px 2px rgba(0, 0, 0, .45); }
+.logoprev { flex: none; display: grid; place-items: center; width: 120px; height: 72px; background: #fff; border-radius: 14px; border: 1px solid var(--line); padding: 6px; }
+.logoprev img { max-width: 100%; max-height: 100%; display: block; }
+.ctrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; flex-wrap: wrap; }
+.sel { user-select: text; font: 800 1.15rem/1.2 var(--font-display); overflow-wrap: anywhere; }
+.inl { display: flex; gap: 8px; align-items: center; }
+.inl input { flex: 1; min-width: 0; text-transform: uppercase; }
+input[type="color"] { width: 64px; height: 38px; padding: 2px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.pillrow { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mqt { animation: none; width: auto; justify-content: center; padding: 0 14px; }
+  .mqh { white-space: normal; text-align: center; }
+  .mqh + .mqh, .mqh .rep + .rep { display: none; }
+  .scw canvas { transition: none; }
+  .gift { animation: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet { animation: none; }
+  .card:active { transform: none; }
+}
+</style>
+
+</head>
+<body>
+<header class="hero">
+  <div class="in">
+    <div class="logo"><img id="logoImg" src="data:image/jpeg;base64,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" alt="TOLLEST"></div>
+    <p class="deco" id="deco" hidden></p>
+    <h1 class="hello" id="hello">Bonjour</h1>
+    <p class="sub" id="sub">Abidjan · chawarma, pizza, tacos, burgers</p>
+    <div class="quick">
+      <button type="button" class="adm" id="histBtn">Mes commandes <b id="histCnt" hidden>0</b></button>
+      <button type="button" class="adm" id="loyBtn">Carte fidélité</button>
+      <button type="button" class="adm" id="ctBtn" hidden>Contact</button>
+      <button type="button" class="adm" id="admBtn" hidden>Admin <b id="admCnt" hidden>0</b></button>
+    </div>
+    <div class="banner" id="banner" hidden></div>
+  </div>
+</header>
+
+<div class="in"><button type="button" class="gift" id="giftBtn" hidden>🎁 Une carte à gratter vous attend. Touchez ici</button></div>
+
+<nav class="chips" aria-label="Catégories">
+  <div class="in"><div class="chiprow" id="chips"></div></div>
+</nav>
+
+<main class="in" id="menu"></main>
+
+<div class="bar" id="bar" hidden>
+  <button type="button" id="openCart"><span><span class="cnt" id="barCnt">0</span>Voir mon panier</span><span id="barTot"></span></button>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<div class="scrim" id="scrim" hidden></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" tabindex="-1" hidden></section>
+
+<!-- ============================================================
+  1) CONFIGURATION : collez ici la configuration de votre projet Firebase
+     (Console Firebase > Paramètres du projet > Vos applications > Configuration).
+  2) Mettez votre adresse e-mail d'administrateur (celle créée dans Authentication).
+============================================================= -->
+<script>
+window.TOLLEST_CONFIG = {
+  firebase: {
+    apiKey: "AIzaSyDMKHPViRR6j268KgnoVK_WiFTnVYkON-Q",
+    authDomain: "tollest-17594.firebaseapp.com",
+    projectId: "tollest-17594",
+    storageBucket: "tollest-17594.firebasestorage.app",
+    messagingSenderId: "171041371435",
+    appId: "1:171041371435:web:8fd5a64ec19dea3780016e"
+  },
+  adminEmails: ["duvalm126@gmail.com"]
+};
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// Pont entre l'application et Firebase : clients anonymes, administrateur par e-mail et mot de passe,
+// photos enregistrées dans la base (pas besoin de Firebase Storage).
+(function () {
+  var C = window.TOLLEST_CONFIG || {}, CFG = C.firebase || {}, MEDIA = {};
+  window.__BLOB = function (id) { return MEDIA[id] || ""; };
+  if (!CFG.apiKey || typeof firebase === "undefined") {
+    var n = document.createElement("div");
+    n.textContent = "Configuration Firebase manquante : la commande en ligne est désactivée.";
+    n.style.cssText = "position:fixed;left:0;right:0;top:0;z-index:99;background:#B3261E;color:#fff;padding:8px 12px;text-align:center;font:14px sans-serif";
+    document.body.appendChild(n); return;
+  }
+  firebase.initializeApp(CFG);
+  var auth = firebase.auth(), db = firebase.firestore();
+  var admins = (C.adminEmails || []).map(function (e) { return String(e).toLowerCase(); });
+  function isAdmin(u) { return !!(u && !u.isAnonymous && u.email && admins.indexOf(u.email.toLowerCase()) >= 0); }
+  var ready = new Promise(function (res) {
+    var done = false;
+    auth.onAuthStateChanged(function (u) {
+      if (u) { if (!done) { done = true; res(u); } }
+      else auth.signInAnonymously().catch(function () { if (!done) { done = true; res(null); } });
+    });
+  });
+  var mediaOn = false;
+  function startMedia() {
+    if (mediaOn) return; mediaOn = true;
+    db.collection("media").onSnapshot(function (snap) {
+      MEDIA = {}; snap.docs.forEach(function (d) { MEDIA[d.id] = (d.data() || {}).d || ""; });
+      if (window.__onMedia) window.__onMedia();
+    }, function () {});
+  }
+  function upload(blob) {
+    return new Promise(function (res, rej) {
+      if (!blob || !/^image\//.test(blob.type || "")) return rej({ code: "unsupported_type" });
+      var fr = new FileReader();
+      fr.onerror = function () { rej({ code: "read" }); };
+      fr.onload = function () {
+        var d = String(fr.result); if (d.length > 900000) return rej({ code: "too_large" });
+        var id = "m" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        db.doc("media/" + id).set({ d: d }).then(function () { MEDIA[id] = d; res({ id: id }); }, rej);
+      };
+      fr.readAsDataURL(blob);
+    });
+  }
+  window.claude = { use: function (name) {
+    if (name === "user") return ready.then(function (u) {
+      if (!u) return null; var adm = isAdmin(u);
+      return { canEdit: function () { return Promise.resolve(adm); }, isOwner: function () { return Promise.resolve(false); }, id: function () { return Promise.resolve(u.uid); }, can: function () { return Promise.resolve(true); } };
+    });
+    if (name === "db") return ready.then(function (u) { if (!u) return null; startMedia(); return { doc: function (p) { return db.doc(p); }, collection: function (c) { return db.collection(c); } }; });
+    if (name === "assets") return ready.then(function (u) { return isAdmin(u) ? { upload: upload } : null; });
+    return Promise.resolve(null);
+  } };
+  // Page d'administration : adresse du site suivie de #admin
+  ready.then(function (u) {
+    if (isAdmin(u)) { window.__logout = function () { auth.signOut().then(function () { history.replaceState(null, "", location.pathname); location.reload(); }); }; return; }
+    if (!/admin/.test(location.hash)) return;
+    var o = document.createElement("div");
+    o.style.cssText = "position:fixed;inset:0;z-index:100;background:var(--bg,#FBF5EE);color:var(--fg,#2B1B15);display:grid;place-items:center;padding:16px;font-family:var(--font-body,sans-serif)";
+    o.innerHTML = '<form id="admForm" style="width:min(380px,100%);display:flex;flex-direction:column;gap:12px"><h2 style="margin:0;font:800 1.5rem var(--font-display,sans-serif)">Administration TOLLEST</h2>' +
+      '<input type="text" id="admMail" autocomplete="username" inputmode="email" placeholder="Adresse e-mail" style="font-size:16px;padding:12px 14px;border:1px solid var(--line,#ccc);border-radius:14px;background:var(--surface,#fff);color:inherit">' +
+      '<input type="password" id="admPass" autocomplete="current-password" placeholder="Mot de passe" style="font-size:16px;padding:12px 14px;border:1px solid var(--line,#ccc);border-radius:14px;background:var(--surface,#fff);color:inherit">' +
+      '<p id="admErr" role="alert" style="margin:0;color:var(--err,#B3261E);min-height:1.2em"></p>' +
+      '<button type="submit" style="border:0;border-radius:16px;padding:15px;font-weight:700;background:var(--accent,#C93A1D);color:#fff">Se connecter</button>' +
+      '<button type="button" id="admBack" style="border:0;background:none;color:inherit;text-decoration:underline">Retour au menu</button></form>';
+    document.body.appendChild(o);
+    document.getElementById("admBack").onclick = function () { history.replaceState(null, "", location.pathname); o.remove(); };
+    document.getElementById("admForm").onsubmit = function (e) {
+      e.preventDefault();
+      auth.signInWithEmailAndPassword(document.getElementById("admMail").value.trim(), document.getElementById("admPass").value).then(function (c) {
+        if (!isAdmin(c.user)) { document.getElementById("admErr").textContent = "Ce compte n'est pas administrateur."; return auth.signOut(); }
+        location.reload();
+      }, function () { document.getElementById("admErr").textContent = "E-mail ou mot de passe incorrect."; });
+    };
+  });
+})();
+</script>
+
+<script>
+(function () {
+  // À renseigner : numéro WhatsApp du restaurant, format international sans « + » (ex. "2250700000000").
+  var RESTO_WHATSAPP = "";
+  var PREP = "25 à 35 min";
+
+  var DEF_ZONES = [
+    { n: "Cocody", f: 1500 }, { n: "Riviera", f: 1500 }, { n: "Angré", f: 1500 }, { n: "Plateau", f: 1500 },
+    { n: "Marcory", f: 1500 }, { n: "Treichville", f: 1500 }, { n: "Koumassi", f: 2000 },
+    { n: "Port-Bouët", f: 2000 }, { n: "Yopougon", f: 2000 }, { n: "Abobo", f: 2000 }
+  ];
+  var PAYS = ["Espèces", "Orange Money", "MTN Money", "Wave"];
+  var THEMES = [["normal", "Normal", ""], ["decembre", "Décembre", "🎄 ✨ 🎁"], ["nouvelan", "Nouvel an", "🎆 🥂 ✨"], ["ramadan", "Ramadan", "🌙 ⭐ 🌙"]];
+  var EMO = ["🎄", "🎁", "✨", "🎉", "🔥", "⭐", "🌙", "🍕", "🌯", "🍔", "🥤", "🎆"];
+  var STAT = [["recue", "Reçue"], ["acceptee", "Acceptée"], ["prep", "En préparation"], ["prete", "Prête"], ["livraison", "En livraison"], ["livree", "Livrée"]];
+  var STAT_BTN = { acceptee: "Accepter", prep: "Lancer la préparation", prete: "Marquer prête", livraison: "Confier à Yango", livree: "Marquer livrée" };
+
+  var CATS = [
+    { id: "chawarma", n: "Chawarma", h: 30 },
+    { id: "pizza", n: "Pizza", h: 6 },
+    { id: "tacos", n: "Tacos", h: 42 },
+    { id: "burgers", n: "Burgers", h: 18 },
+    { id: "jus", n: "Jus", h: 338 },
+    { id: "desserts", n: "Desserts", h: 262 }
+  ];
+  var EXC = [["Fromage", 500], ["Œuf", 300], ["Frites dedans", 500]];
+  var EXP = [["Fromage en plus", 1000], ["Olives", 500]];
+  var EXT = [["Double fromage", 500], ["Frites en plus", 500]];
+  var EXB = [["Fromage", 300], ["Œuf", 300], ["Frites", 700]];
+  var BOIS = [["33 cl", 500], ["50 cl", 800]];
+  var JUS2 = [["33 cl", 1000], ["50 cl", 1500]];
+  // Pour ajouter une photo à un plat : img: "data:image/jpeg;base64,..." (ou un fichier publié avec la page).
+  var ITEMS = [
+    { id: "cp", c: "chawarma", n: "Chawarma poulet", d: "Poulet mariné, crudités, sauce à l'ail", sizes: [["Normal", 2500], ["Maxi", 3500]], ex: EXC },
+    { id: "cb", c: "chawarma", n: "Chawarma bœuf", d: "Bœuf grillé, oignons, sauce piquante", sizes: [["Normal", 3000], ["Maxi", 4000]], ex: EXC },
+    { id: "cm", c: "chawarma", n: "Chawarma mixte", d: "Poulet et bœuf, double sauce", sizes: [["Normal", 3500], ["Maxi", 4500]], ex: EXC },
+    { id: "pm", c: "pizza", n: "Margherita", d: "Tomate, mozzarella, basilic", sizes: [["Moyenne", 4000], ["Grande", 6000]], ex: EXP },
+    { id: "pp", c: "pizza", n: "Pizza poulet", d: "Poulet, poivrons, oignons", sizes: [["Moyenne", 4500], ["Grande", 7000]], ex: EXP },
+    { id: "pq", c: "pizza", n: "Quatre fromages", d: "Quatre fromages fondus", sizes: [["Moyenne", 5000], ["Grande", 7500]], ex: EXP },
+    { id: "pv", c: "pizza", n: "Pizza viande hachée", d: "Viande hachée, oignons, olives", sizes: [["Moyenne", 5000], ["Grande", 7500]], ex: EXP },
+    { id: "tp", c: "tacos", n: "Tacos poulet", d: "Poulet, frites, sauce fromagère", sizes: [["Simple", 3000], ["Double", 4000]], ex: EXT },
+    { id: "tv", c: "tacos", n: "Tacos viande hachée", d: "Viande hachée, frites, sauce fromagère", sizes: [["Simple", 3500], ["Double", 4500]], ex: EXT },
+    { id: "tm", c: "tacos", n: "Tacos mixte", d: "Poulet et viande hachée, frites", sizes: [["Simple", 4000], ["Double", 5000]], ex: EXT },
+    { id: "bc", c: "burgers", n: "Burger classique", d: "Steak, salade, tomate, sauce maison", p: 2500, ex: EXB },
+    { id: "bf", c: "burgers", n: "Cheeseburger", d: "Steak, cheddar fondu, cornichons", p: 3000, ex: EXB },
+    { id: "bd", c: "burgers", n: "Double steak", d: "Deux steaks, double fromage", p: 4000, ex: EXB },
+    { id: "bp", c: "burgers", n: "Burger poulet croustillant", d: "Poulet pané, salade, sauce douce", p: 3500, ex: EXB },
+    { id: "jb", c: "jus", n: "Bissap", d: "Fleurs d'hibiscus, menthe, bien frais", sizes: BOIS },
+    { id: "jg", c: "jus", n: "Gnamankoudji", d: "Gingembre pressé et citron", sizes: BOIS },
+    { id: "jm", c: "jus", n: "Jus de mangue", d: "Mangue pressée, sans conservateur", sizes: JUS2 },
+    { id: "jc", c: "jus", n: "Cocktail de fruits", d: "Ananas, mangue et orange", sizes: JUS2 },
+    { id: "dc", c: "desserts", n: "Crêpe chocolat", d: "Crêpe chaude, chocolat fondu", p: 1000, ex: [["Banane", 300], ["Chantilly", 300]] },
+    { id: "dg", c: "desserts", n: "Glace", d: "Vanille, chocolat ou fraise", sizes: [["1 boule", 500], ["3 boules", 1200]] },
+    { id: "dm", c: "desserts", n: "Gâteau maison", d: "La part du jour", p: 1500 },
+    { id: "ds", c: "desserts", n: "Salade de fruits", d: "Fruits frais de saison", p: 1500 }
+  ];
+
+  function defSet() { return { theme: "normal", banner: { on: false, text: "" }, promos: {}, ov: {}, custom: [], ads: [], loy: {}, ui: {}, contact: {}, shop: {}, scr: {}, payn: {}, zones: DEF_ZONES.map(function (z) { return { n: z.n, f: z.f }; }) }; }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+
+  // Menu effectif : plats de base + modifications de l'administrateur (prix, photo, nom, rupture, retrait) + plats ajoutés.
+  function mergeItem(b, o) {
+    var i = Object.assign({}, b);
+    if (o.n) i.n = o.n;
+    if (o.d) i.d = o.d;
+    i.imgId = o.img || ""; i.off = !!o.off; i.hide = !!o.hide;
+    if (b.sizes) i.sizes = b.sizes.map(function (z, k) { var v = o.sz && o.sz[k]; return [z[0], v !== undefined && v !== null && v !== "" ? Number(v) : z[1]]; });
+    else if (o.p !== undefined && o.p !== null && o.p !== "") i.p = Number(o.p);
+    return i;
+  }
+  function effItems(set, all) {
+    var ov = (set && set.ov) || {}, out = [];
+    ITEMS.forEach(function (b) { var i = mergeItem(b, ov[b.id] || {}); if (all || !i.hide) out.push(i); });
+    ((set && set.custom) || []).forEach(function (c) { var i = mergeItem(c, c); if (all || !i.hide) out.push(i); });
+    return out;
+  }
+
+  var SET = defSet(), ADM = null, ASSETS = null, ITEMS_EFF = effItems(SET);
+  var S = { cat: "all", cart: [], view: null, sel: null, mode: "Livraison", pay: "Espèces", zone: "", name: "", phone: "", addr: "", order: null, tab: "orders", busy: false, edit: null, loyPhone: "", openCust: null, cp: null, cpErr: "", scNo: "", scDone: false, fbe: {}, fbt: {} };
+  var LOYMAP = {}, TEST_PHONE = "07 00 00 00 00";
+  var DB = null, USER = null, ME = null, IS_ADMIN = false, CAN_WRITE = null;
+  var ORDERS = [], STATS = {}, statUnsub = null;
+  var lastFocus = null, toastT = null;
+
+  function blobUrl(id) { return window.__BLOB ? window.__BLOB(id) : "/_blob/" + String(id).replace(/[^\w-]/g, ""); }
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function money(n) { return Number(n).toLocaleString("fr-FR").replace(/[  ]/g, " ") + " FCFA"; }
+  function find(id) { return ITEMS_EFF.filter(function (i) { return i.id === id; })[0]; }
+  function catOf(id) { return CATS.filter(function (c) { return c.id === id; })[0]; }
+  function lsGet(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function today() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+  function frDate(iso) { var p = String(iso).split("-"); return p.length === 3 ? p[2] + "/" + p[1] : iso; }
+  function zones() { return SET.zones && SET.zones.length ? SET.zones : DEF_ZONES; }
+  function statLabel(k) { var r = STAT.filter(function (s) { return s[0] === k; })[0]; return k === "refusee" ? "Refusée" : r ? r[1] : "Reçue"; }
+
+  var saved = lsGet("tollest.cart"); if (Array.isArray(saved)) S.cart = saved.filter(function (l) { return l && find(l.id) && l.qty > 0; });
+  var cust = lsGet("tollest.cust"); if (cust) { S.name = cust.name || ""; S.phone = cust.phone || ""; S.addr = cust.addr || ""; }
+
+  // Prix et promos
+  function promoOf(id) { var p = SET.promos && SET.promos[id]; return p && p.pct > 0 && (!p.until || p.until >= today()) ? p : null; }
+  function disc(u, id) { var p = promoOf(id); return p ? Math.round(u * (100 - p.pct) / 100 / 5) * 5 : u; }
+  function rawFrom(i) { return i.sizes ? Math.min.apply(null, i.sizes.map(function (z) { return z[1]; })) : i.p; }
+  function subtotal() { return S.cart.reduce(function (a, l) { return a + l.unit * l.qty; }, 0); }
+  function count() { return S.cart.reduce(function (a, l) { return a + l.qty; }, 0); }
+  function fee() { if (S.mode !== "Livraison") return 0; var z = zones().filter(function (z) { return z.n === S.zone; })[0]; return z ? z.f : 0; }
+  function persistCart() { lsSet("tollest.cart", S.cart); }
+
+  // Menu
+  function renderChips() {
+    var all = [{ id: "all", n: "Tout" }].concat(catsEff(SET));
+    $("chips").innerHTML = all.map(function (c) {
+      return '<button type="button" class="chip" data-cat="' + c.id + '" aria-pressed="' + (S.cat === c.id) + '">' + c.n + '</button>';
+    }).join("");
+  }
+  function card(i) {
+    var c = catOf(i.c), p = promoOf(i.id), raw = rawFrom(i), now = disc(raw, i.id);
+    var vis = i.imgId ? '<img src=\"' + blobUrl(i.imgId) + '\" alt="' + esc(i.n) + '" loading="lazy">' : '<b aria-hidden="true">' + esc(i.n.charAt(0)) + '</b>';
+    var price = (p ? '<span class="old">' + money(raw) + '</span>' : '') + (i.sizes ? '<small>dès </small>' : '') + money(now) + (p ? '<span class="until">' + esc(p.label || "Promo") + (p.until ? ' · jusqu\'au ' + frDate(p.until) : '') + '</span>' : '');
+    return '<button type="button" class="card' + (i.off ? ' off' : '') + '" data-id="' + i.id + '"' + (i.off ? ' disabled' : '') + '><span class="tile' + (i.imgId ? '' : ' ph') + '" style="--h:' + c.h + '">' + (i.off ? '<span class="tag off">Indisponible</span>' : p ? '<span class="tag">-' + p.pct + '%</span>' : '') + vis + '</span>' +
+      '<span class="cbody"><span class="cname">' + esc(i.n) + '</span>' + (i.off ? '<span class="unav">Indisponible pour le moment</span>' : '') + '<span class="cdesc">' + esc(i.d) + '</span>' +
+      '<span class="cprice"><span>' + price + '</span><span class="plus" aria-hidden="true">+</span></span></span></button>';
+  }
+  function renderMenu() {
+    var u = U(), cats = catsEff(SET), list = S.cat === "all" ? cats : cats.filter(function (c) { return c.id === S.cat; });
+    $("menu").className = "in lay-" + u.lay + (u.desc ? "" : " nodesc");
+    var h = "";
+    if (!shopOpen()) h += '<div class="shut" role="status"><b>Commandes en pause</b><br>' + esc(shopMsg()) + '</div>';
+    if (S.cat === "all") {
+      var pr = ITEMS_EFF.filter(function (i) { return promoOf(i.id) && !i.off && cats.some(function (c) { return c.id === i.c; }); });
+      if (pr.length) h += '<section class="cat promo" aria-label="Promos du moment"><h2 class="cat-h">Promos du moment<span>' + pr.length + (pr.length > 1 ? ' offres' : ' offre') + '</span></h2><div class="grid">' + pr.map(card).join("") + '</div></section>';
+    }
+    if (S.cat === "all") h += adsAfter("top");
+    h += list.map(function (c) {
+      var items = ITEMS_EFF.filter(function (i) { return i.c === c.id; });
+      if (!items.length) return adsAfter(c.id);
+      return '<section class="cat" aria-label="' + c.n + '"><h2 class="cat-h">' + c.n + '<span>' + items.length + ' plats</span></h2><div class="grid">' + items.map(card).join("") + '</div></section>' + adsAfter(c.id);
+    }).join("");
+    $("menu").innerHTML = h + '<p class="note">Menu et prix donnés en exemple. Le restaurant les remplace par les siens.</p>';
+  }
+  function adHTML(a) {
+    var src = blobUrl(a.m);
+    return '<figure class="ad">' + (a.k === "vid" ? '<video class="advid" src="' + src + '" autoplay muted loop playsinline preload="metadata"></video><span class="hint">Touchez pour le son</span>' : '<img src="' + src + '" alt="' + esc(a.cap || "Promotion") + '" loading="lazy">') + (a.cap ? (a.mq ? mqHTML(a.cap, true, (SET.banner || {}).cols, (SET.banner || {}).bg) : '<figcaption>' + esc(a.cap) + '</figcaption>') : '') + '</figure>';
+  }
+  function adsAfter(id) { return (SET.ads || []).filter(function (a) { return a && a.m && a.on !== false && a.after === id; }).map(adHTML).join(""); }
+  function renderBar() {
+    var n = count();
+    $("bar").hidden = n === 0;
+    $("barCnt").textContent = n;
+    $("barTot").textContent = money(subtotal());
+  }
+  function toast(msg) {
+    var t = $("toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastT); toastT = setTimeout(function () { t.hidden = true; }, 2200);
+  }
+
+  function applySettings() {
+    ITEMS_EFF = effItems(SET);
+    $("loyBtn").hidden = !loyCfg(SET).on;
+    var root = document.documentElement, th = THEMES.filter(function (t) { return t[0] === SET.theme; })[0] || THEMES[0];
+    if (th[0] === "normal") root.removeAttribute("data-event"); else root.setAttribute("data-event", th[0]);
+    $("deco").hidden = !th[2]; $("deco").textContent = th[2];
+    var b = SET.banner && SET.banner.on && (SET.banner.text || "").trim(), bn = SET.banner || {};
+    $("banner").hidden = !b;
+    $("banner").innerHTML = !b ? "" : (bn.mq || (bn.cols && bn.cols.length) || bn.bg) ? mqHTML(b, !!bn.mq, bn.cols, bn.bg) : '<div class="plain">' + esc(b) + '</div>';
+    var ct = CT(); $("ctBtn").hidden = !(IS_ADMIN || ct.phone || ct.phone2 || ct.wa || ct.addr || ct.hours || ct.note || RESTO_WHATSAPP);
+    applyUI();
+    if (S.cat !== "all" && !catsEff(SET).some(function (c) { return c.id === S.cat; })) S.cat = "all";
+    renderChips(); renderMenu(); refreshHist();
+  }
+
+  // Carte de fidélité : les commandes livrées sont comptées par numéro de téléphone.
+  var GIFT = '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 11h16v9H4zM3 7h18v4H3zM12 7v13M12 7C10 3 6 4 7 7c1 1 3 0 5 0zm0 0c2-4 6-3 5 0-1 1-3 0-5 0z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+  var CHECK = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function loyCfg(set) {
+    var l = (set && set.loy) || {};
+    return { on: l.on !== false, stamps: Math.max(2, Math.min(12, Math.round(Number(l.stamps)) || 6)), title: l.title || "Une pizza et 2 boissons offertes", desc: l.desc || "", img: l.img || "" };
+  }
+  function pdigits(p) { return String(p || "").replace(/\D/g, "").slice(-10); }
+  function pkey(p) {
+    var d = pdigits(p); if (d.length < 8) return "";
+    var a = 2166136261, b = 5381;
+    for (var i = 0; i < d.length; i++) { var c = d.charCodeAt(i); a ^= c; a = Math.imul(a, 16777619) >>> 0; b = (Math.imul(b, 33) + c + 40503) >>> 0; }
+    return "p" + a.toString(16) + b.toString(16);
+  }
+  function loyState(d) {
+    var s = loyCfg(SET).stamps, c = (d && d.c) || 0, g = (d && d.g) || 0, avail = Math.max(0, Math.floor(c / s) - g), prog = c % s;
+    if (avail > 0 && prog === 0) prog = s;
+    return { c: c, avail: avail, prog: prog, s: s, left: s - prog };
+  }
+  function loyList() {
+    return Object.keys(LOYMAP).map(function (k) { return Object.assign({ k: k }, LOYMAP[k]); }).filter(function (x) { return x.c > 0; }).sort(function (a, b) { return b.c - a.c || (a.last || 0) - (b.last || 0); });
+  }
+  function cardHTML(st) {
+    var cfg = loyCfg(SET), dots = "";
+    for (var k = 1; k <= st.s; k++) dots += '<span class="dot' + (k <= st.prog ? ' on' : '') + '" role="img" aria-label="Commande ' + k + (k <= st.prog ? ' validée' : ' à venir') + '">' + (k <= st.prog ? CHECK : k) + '</span>';
+    dots += '<span class="dot gift' + (st.avail > 0 ? ' on' : '') + '" role="img" aria-label="Cadeau">' + (cfg.img ? '<img src=\"' + blobUrl(cfg.img) + '\" alt="">' : GIFT) + '</span>';
+    var msg = st.avail > 0 ? '<b>Cadeau prêt : ' + esc(cfg.title) + '.</b> Présentez-vous au restaurant avec votre numéro.' :
+      st.c === 0 ? 'Aucune commande validée pour l\'instant. Après ' + st.s + ' commandes livrées, le cadeau est pour vous.' :
+      'Plus que <b>' + st.left + ' commande' + (st.left > 1 ? 's' : '') + '</b> pour : ' + esc(cfg.title) + '.';
+    return '<div class="lcard"><div class="dots">' + dots + '</div><p>' + msg + '</p></div>';
+  }
+  function loyDynHTML() {
+    var key = pkey(S.loyPhone), st = loyState(key ? LOYMAP[key] : null), list = loyList(), h = cardHTML(st);
+    if (!key) h += '<p class="muted small">Entrez votre numéro pour voir votre carte.</p>';
+    else if (!LOYMAP[key]) h += '<p class="muted small">Aucune commande livrée avec ce numéro pour le moment. Chaque commande livrée coche une case.</p>';
+    h += '<div class="stats"><div><b>' + list.length + '</b><span>client' + (list.length > 1 ? 's ont' : ' a') + ' déjà commandé</span></div><div><b>' + (list[0] ? list[0].c : 0) + '</b><span>commandes pour le meilleur client</span></div></div>';
+    if (list.length) h += '<div class="grp"><span class="lg">Classement</span>' + list.slice(0, 5).map(function (x, i) {
+      return '<div class="rank' + (x.k === key ? ' me' : '') + '"><span class="pos">' + (i + 1) + '</span><span class="nm">' + esc(x.nm || "Client") + ' · ••' + esc(x.t2 || "") + (x.k === key ? ' (vous)' : '') + '</span><b>' + x.c + '</b></div>';
+    }).join("") + '</div>';
+    else h += '<p class="muted small">Personne n\'a encore de commande livrée. Soyez le premier du classement.</p>';
+    return h + (DB ? '' : '<p class="muted small">Le suivi des commandes n\'est pas disponible dans ce mode d\'ouverture.</p>');
+  }
+  function loyHTML() {
+    var cfg = loyCfg(SET);
+    return head("Carte de fidélité") + '<div class="sheet-body"><div class="reward"><span class="pic">' + (cfg.img ? '<img src=\"' + blobUrl(cfg.img) + '\" alt="">' : GIFT) + '</span><div><b>' + esc(cfg.title) + '</b><p class="muted small">' + esc(cfg.desc || ("Offert après " + cfg.stamps + " commandes livrées")) + '</p></div></div>' +
+      '<div class="field"><label class="lg" for="lPhone">Votre numéro de téléphone</label><input type="tel" id="lPhone" inputmode="tel" autocomplete="tel" placeholder="07 00 00 00 00" value="' + esc(S.loyPhone) + '"></div><div id="loyDyn" style="display:flex;flex-direction:column;gap:16px">' + loyDynHTML() + '</div></div>' +
+      '<div class="sheet-foot"><button type="button" class="btn center" data-act="close">Voir le menu</button></div>';
+  }
+  function refreshLoy() {
+    if (S.view === "loy" && $("loyDyn")) $("loyDyn").innerHTML = loyDynHTML();
+    if (S.view === "admin" && S.tab === "loy" && $("loyList")) $("loyList").innerHTML = loyListHTML();
+  }
+  function creditLoyalty(o) {
+    var k = pkey(o.phone); if (!k || !DB) return;
+    var ref = DB.doc("loyalty/" + k);
+    ref.get().then(function (s) {
+      var d = s.exists ? s.data() : { c: 0, g: 0, nos: [] }, nos = d.nos || [];
+      if (nos.indexOf(o.no) >= 0) return;
+      var nm = String(o.name || "").trim().split(/\s+/)[0] || "Client";
+      return ref.set({ c: (d.c || 0) + 1, g: d.g || 0, nm: nm.charAt(0).toUpperCase() + nm.slice(1, 12).toLowerCase(), t2: pdigits(o.phone).slice(-2), last: Date.now(), nos: nos.concat(o.no).slice(-40) }).then(function () { toast("Fidélité mise à jour"); });
+    }).catch(function () { toast("La carte de fidélité n'a pas pu être mise à jour"); });
+  }
+  function claimGift(k) {
+    var ref = DB.doc("loyalty/" + k);
+    ref.get().then(function (s) {
+      if (!s.exists) return;
+      var d = s.data();
+      if (loyState(d).avail < 1) { toast("Aucun cadeau à remettre"); return; }
+      return ref.update({ g: (d.g || 0) + 1 }).then(function () { toast("Cadeau marqué comme remis"); });
+    }).catch(function () { toast("Action impossible"); });
+  }
+  function loyListHTML() {
+    var by = {}, list = loyList();
+    ORDERS.forEach(function (o) { var k = pkey(o.phone); if (k) (by[k] = by[k] || []).push(o); });
+    if (!list.length) return '<div class="empty">Aucune commande livrée pour l\'instant.<br>Quand vous marquez une commande « Livrée », la carte du client se coche.</div>';
+    return list.map(function (x, i) {
+      var os = by[x.k] || [], first = os[0], st = loyState(x);
+      var h = '<div class="ord"><div class="ord-h"><b>' + (i + 1) + (i === 0 ? 'er' : 'e') + ' · ' + esc(first ? first.name : (x.nm || "Client")) + '</b><span class="pill">' + x.c + ' livrée' + (x.c > 1 ? 's' : '') + '</span></div>';
+      h += '<div class="muted small">' + (first ? esc(first.phone) : '••' + esc(x.t2 || "")) + ' · ' + (st.avail > 0 ? '<b>' + st.avail + ' cadeau à remettre</b>' : 'plus que ' + st.left + ' avant le cadeau') + '</div>';
+      h += '<div class="acts">' + (st.avail > 0 ? '<button type="button" class="btn sm" data-act="claim" data-k="' + x.k + '">Cadeau remis</button>' : '') + '<button type="button" class="btn sm ghost" data-act="hist" data-k="' + x.k + '">' + (S.openCust === x.k ? 'Masquer' : 'Historique') + '</button></div>';
+      if (S.openCust === x.k) h += '<ul>' + (os.length ? os.map(function (o) {
+        var s = (STATS[o.no] && STATS[o.no].s) || "recue";
+        return '<li>' + esc(o.no) + ' · ' + new Date(o.at).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }) + ' · ' + money(o.total) + ' · ' + statLabel(s) + '</li>';
+      }).join("") : '<li>Historique non disponible</li>') + '</ul>';
+      return h + '</div>';
+    }).join("");
+  }
+
+  // Tiroir
+  var sheet = $("sheet"), scrim = $("scrim");
+  var X = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>';
+  function head(title) { return '<div class="sheet-head"><h2 id="sheetTitle">' + esc(title) + '</h2><button type="button" class="x" data-act="close" aria-label="Fermer">' + X + '</button></div>'; }
+  function stopStat() { if (statUnsub) { try { statUnsub(); } catch (e) {} statUnsub = null; } }
+  function showSheet(view) {
+    if (sheet.hidden) { lastFocus = document.activeElement; sheet.hidden = false; scrim.hidden = false; document.body.classList.add("lock"); }
+    stopStat(); S.view = view; sheet.classList.toggle("tall", view === "admin"); renderSheet(); sheet.focus();
+  }
+  function closeSheet() {
+    stopStat(); sheet.hidden = true; scrim.hidden = true; document.body.classList.remove("lock"); S.view = null;
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  function selUnit() { var s = S.sel, it = s.it, u = it.sizes ? it.sizes[s.size][1] : it.p; s.extras.forEach(function (k) { u += it.ex[k][1]; }); return disc(u, it.id); }
+  function updAdd() { var s = S.sel; $("qVal").textContent = s.qty; $("addBtn").innerHTML = '<span>Ajouter</span><span>' + money(selUnit() * s.qty) + '</span>'; }
+
+  function productHTML() {
+    var s = S.sel, it = s.it, p = promoOf(it.id), h = head(it.n) + '<div class="sheet-body"><p class="muted">' + esc(it.d) + '</p>';
+    if (p) h += '<p class="stat"><b>-' + p.pct + '%</b> ' + esc(p.label || "Promo") + (p.until ? ' · jusqu\'au ' + frDate(p.until) : '') + '<br><span class="muted small">La réduction s\'applique au total du plat, suppléments compris.</span></p>';
+    if (it.sizes) h += '<fieldset class="grp"><legend>Taille</legend>' + it.sizes.map(function (z, k) {
+      return '<label class="opt"><span><input type="radio" name="size" value="' + k + '"' + (k === s.size ? ' checked' : '') + '>' + esc(z[0]) + '</span><span class="pr">' + money(z[1]) + '</span></label>';
+    }).join("") + '</fieldset>';
+    if (it.ex) h += '<fieldset class="grp"><legend>Suppléments</legend>' + it.ex.map(function (z, k) {
+      return '<label class="opt"><span><input type="checkbox" name="extra" value="' + k + '">' + esc(z[0]) + '</span><span class="pr">+ ' + money(z[1]) + '</span></label>';
+    }).join("") + '</fieldset>';
+    h += '<div class="field"><label class="lg" for="pNote">Remarque</label><textarea id="pNote" rows="2" placeholder="Sans oignons, sauce à part…"></textarea></div></div>';
+    h += '<div class="sheet-foot"><div class="stepper"><button type="button" data-act="pq" data-d="-1" aria-label="Moins">−</button><output id="qVal">1</output><button type="button" data-act="pq" data-d="1" aria-label="Plus">+</button></div><button type="button" class="btn" id="addBtn" data-act="add"></button></div>';
+    return h;
+  }
+
+  function cartHTML() {
+    if (!S.cart.length) return head("Mon panier") + '<div class="sheet-body"><div class="empty">Votre panier est vide.<br>Choisissez un plat dans le menu.</div></div><div class="sheet-foot"><button type="button" class="btn center" data-act="close">Voir le menu</button></div>';
+    var h = head("Mon panier") + '<div class="sheet-body">';
+    h += S.cart.map(function (l, i) {
+      return '<div class="line"><div class="t"><b>' + esc(l.name) + '</b>' + (l.detail ? '<div>' + esc(l.detail) + '</div>' : '') + (l.promo ? '<div>Promo -' + l.promo + '%</div>' : '') + (l.note ? '<div>Remarque : ' + esc(l.note) + '</div>' : '') + '<div>' + money(l.unit) + ' l\'unité</div></div>' +
+        '<div class="r"><span>' + money(l.unit * l.qty) + '</span><span class="stepper"><button type="button" data-act="cq" data-i="' + i + '" data-d="-1" aria-label="Moins">−</button><output>' + l.qty + '</output><button type="button" data-act="cq" data-i="' + i + '" data-d="1" aria-label="Plus">+</button></span><button type="button" class="rm" data-act="rm" data-i="' + i + '">Retirer</button></div></div>';
+    }).join("");
+    h += '<div class="sum"><div class="tot"><span>Sous-total</span><span>' + money(subtotal()) + '</span></div></div></div>';
+    h += '<div class="sheet-foot"><button type="button" class="btn" data-act="tocheckout"><span>Continuer</span><span>' + money(subtotal()) + '</span></button></div>';
+    return h;
+  }
+
+  function sumHTML() {
+    var f = fee(), da = discAmt();
+    return '<div><span>Sous-total</span><span>' + money(subtotal()) + '</span></div>' +
+      (S.cp ? (S.cp.k === "disc" ? '<div><span>Code ' + esc(S.cp.code) + '</span><span>− ' + money(da) + '</span></div>' : '<div><span>Cadeau</span><span style="text-align:right;overflow-wrap:anywhere">' + esc(S.cp.l) + '</span></div>') : '') +
+      (S.mode === "Livraison" ? '<div><span>Livraison Yango (estimation)</span><span>' + (S.zone ? money(f) : 'selon le quartier') + '</span></div>' : '') +
+      '<div class="tot"><span>Total</span><span>' + money(subtotal() - da + f) + '</span></div>';
+  }
+  function checkoutHTML() {
+    var h = head("Ma commande") + '<div class="sheet-body">';
+    h += '<fieldset class="grp"><legend>Récupération</legend><div class="seg">' + ["Livraison", "À emporter", "Sur place"].map(function (m) {
+      return '<label><input type="radio" name="mode" value="' + m + '"' + (S.mode === m ? ' checked' : '') + '><span>' + m + '</span></label>';
+    }).join("") + '</div></fieldset>';
+    h += '<div class="field"><label class="lg" for="cName">Votre nom</label><input type="text" id="cName" autocomplete="name" value="' + esc(S.name) + '"></div>';
+    h += '<div class="field"><label class="lg" for="cPhone">Téléphone</label><input type="tel" id="cPhone" autocomplete="tel" inputmode="tel" placeholder="07 00 00 00 00" value="' + esc(S.phone) + '"></div>';
+    if (S.mode === "Livraison") {
+      h += '<div class="field"><label class="lg" for="cZone">Quartier de livraison à Abidjan</label><select id="cZone"><option value="">Choisir un quartier</option>' + zones().map(function (z) {
+        return '<option value="' + esc(z.n) + '"' + (S.zone === z.n ? ' selected' : '') + '>' + esc(z.n) + ' · ' + money(z.f) + '</option>';
+      }).join("") + '</select><p class="muted small">Livraison assurée par Yango. Les frais affichés sont une estimation.</p></div>';
+      h += '<div class="field"><label class="lg" for="cAddr">Adresse ou point de repère</label><textarea id="cAddr" rows="2" placeholder="Près de la pharmacie, portail bleu…">' + esc(S.addr) + '</textarea></div>';
+    }
+    if (DB) h += '<div class="field"><label class="lg" for="cCode">Code cadeau (facultatif)</label><div class="inl"><input type="text" id="cCode" autocomplete="off" autocapitalize="characters" maxlength="12" placeholder="TOL…" value="' + esc(S.cp ? S.cp.code : "") + '"><button type="button" class="btn sm ghost" data-act="applycode">Appliquer</button></div><p class="small" id="cpMsg" role="status">' + cpMsgHTML() + '</p></div>';
+    h += '<fieldset class="grp"><legend>Paiement</legend>' + PAYS.map(function (p) {
+      return '<label class="opt"><span><input type="radio" name="pay" value="' + p + '"' + (S.pay === p ? ' checked' : '') + '>' + p + '</span></label>';
+    }).join("") + '</fieldset>';
+    h += '<div class="sum" id="sum">' + sumHTML() + '</div><p class="err" id="err" role="alert"></p></div>';
+    h += '<div class="sheet-foot"><button type="button" class="btn ghost" data-act="tocart" style="flex:0 0 auto">Panier</button><button type="button" class="btn center" id="subBtn" data-act="submit">Valider la commande</button></div>';
+    return h;
+  }
+
+  function stepsHTML(k) {
+    var idx = STAT.map(function (s) { return s[0]; }).indexOf(k); if (idx < 0) idx = 0;
+    return '<div class="steps" aria-hidden="true">' + STAT.map(function (s, n) { return '<i' + (n <= idx ? ' class="on"' : '') + '></i>'; }).join("") + '</div>';
+  }
+  function updStat(k) {
+    var el = $("statBox"); if (!el) return;
+    var mo = S.order && myOrders().filter(function (x) { return x.no === S.order.o.no; })[0];
+    el.innerHTML = '<b>' + (k === "refusee" ? 'Commande refusée' : statLabel(k)) + '</b>' + (k === "refusee" ? '<p class="muted small">Le restaurant ne peut pas la préparer. Appelez-le pour en parler.</p>' : stepsHTML(k)) + (k === "livree" && mo && canScratch(mo) && !(mo.sc && mo.sc.rv) ? '<button type="button" class="btn center" data-act="scratch" data-no="' + esc(mo.no) + '" style="margin-top:12px">🎁 Gratter ma carte</button>' : '');
+  }
+
+  function doneHTML() {
+    var o = S.order, sent = o.sent;
+    var h = head(sent ? "Commande envoyée" : "Commande prête") + '<div class="sheet-body"><div><p class="muted">Numéro de commande</p><p class="order-no">' + esc(o.o.no) + '</p></div>';
+    if (sent) h += '<div class="stat" id="statBox"></div><p>Préparation estimée : <b>' + PREP + '</b>. Le restaurant a reçu votre commande, le statut se met à jour ici.</p><p class="muted small">Quand elle est livrée, elle coche votre carte de fidélité.</p>';
+    else h += '<p>Préparation estimée : <b>' + PREP + '</b>.<br>Envoyez ce récapitulatif au restaurant pour confirmer votre commande.</p>';
+    h += payBox(o.o, sent);
+    h += '<pre class="recap" id="recap">' + esc(o.text) + '</pre>';
+    if (!sent) h += '<p class="muted small">' + (o.err ? esc(o.err) : 'Cette version n\'envoie pas encore la commande toute seule.') + '</p>';
+    h += '</div><div class="sheet-foot"><div class="row">';
+    if (!sent && waNum()) h += '<a class="btn center" target="_blank" rel="noopener" href="https://wa.me/' + waNum() + '?text=' + encodeURIComponent(o.text) + '">Envoyer sur WhatsApp</a>';
+    h += '<button type="button" class="btn center' + (sent || waNum() ? ' ghost' : '') + '" data-act="copy" id="copyBtn">Copier le récapitulatif</button>';
+    if (sent && loyCfg(SET).on) h += '<button type="button" class="btn center ghost" data-act="toloy">Ma carte de fidélité</button>';
+    if (sent) h += '<button type="button" class="btn center ghost" data-act="tohist">Mes commandes</button>';
+    h += '<button type="button" class="btn center ghost" data-act="close">Retour au menu</button></div></div>';
+    return h;
+  }
+
+  // ===== Réglages, historique, carte à gratter, avis, contact, texte défilant =====
+  var GREET = "", LOGO0 = $("logoImg").getAttribute("src"), STLOADED = false, ORDCOUNT = null;
+  var MYDB = null, HIST0 = lsGet("tollest.hist") || [], COUPONS = {}, FBE = ["😍", "🙂", "😐", "🙁", "😡", "👍", "👎"];
+  if (!Array.isArray(HIST0)) HIST0 = [];
+  var MQC = [["#FFD23F", "Jaune"], ["#FF5A3C", "Rouge orangé"], ["#3DDC84", "Vert"], ["#4DB6FF", "Bleu"], ["#FF7AD9", "Rose"], ["#FFFFFF", "Blanc"], ["#FF9F1C", "Orange"], ["#B388FF", "Violet"]];
+  var MQB = [["#1D120C", "Brun foncé"], ["#C93A1D", "Rouge"], ["#0E3F29", "Vert sapin"], ["#2E2950", "Bleu nuit"], ["#14506E", "Bleu canard"], ["#FFFFFF", "Blanc"]];
+  var PRESETS = [["Rouge TOLLEST", "#D5412A", "#8A2212", "#C93A1D"], ["Vert fête", "#1E7A4C", "#0E3F29", "#C0281F"], ["Bleu nuit", "#2E2950", "#0E0C1D", "#946106"], ["Orange soleil", "#E8731A", "#9A3D08", "#C2410C"], ["Noir et or", "#2A2A2A", "#0B0B0B", "#946106"], ["Violet", "#6B3FA0", "#34174F", "#7C3AED"]];
+  var BGS = [["Crème (d'origine)", ""], ["Blanc", "#FFFFFF"], ["Rose pâle", "#FDEEF0"], ["Vert pâle", "#EEF6EF"], ["Sombre", "#171009"]];
+  var DEF_PRIZES = [{ id: "p1", k: "disc", v: 500, l: "", w: 2 }, { id: "p2", k: "disc", v: 200, l: "", w: 4 }, { id: "p3", k: "free", v: 0, l: "Plus de fromage sur votre prochaine commande", w: 3 }, { id: "p4", k: "none", v: 0, l: "Pas de chance cette fois, retentez à la prochaine commande !", w: 2 }];
+
+  function hx(c, d) { return /^#[0-9a-fA-F]{6}$/.test(c || "") ? c : d; }
+  function lum(h) { var n = parseInt(h.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; }
+  function U(set) { return Object.assign({ lay: "2", rad: "round", desc: true }, (set || SET).ui || {}); }
+  function CT(set) { return Object.assign({ phone: "", phone2: "", wa: "", addr: "", hours: "", note: "" }, (set || SET).contact || {}); }
+  function SH(set) { return Object.assign({ open: true, msg: "", min: 0, auto: false, from: "11:00", to: "23:00" }, (set || SET).shop || {}); }
+  function PN(set) { return Object.assign({ name: "", wave: "", om: "", mtn: "" }, (set || SET).payn || {}); }
+  function hmin(t) { var p = String(t || "").split(":"); return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0); }
+  function inHours(sh) { if (!sh.auto) return true; var d = new Date(), m = d.getHours() * 60 + d.getMinutes(), a = hmin(sh.from), b = hmin(sh.to); return a <= b ? (m >= a && m < b) : (m >= a || m < b); }
+  function shopOpen() { var sh = SH(); return sh.open !== false && inHours(sh); }
+  function shopMsg() { var sh = SH(); return sh.open === false ? (sh.msg || "Les commandes sont en pause pour le moment.") : (sh.msg || "Ouvert de " + sh.from + " à " + sh.to + "."); }
+  function scrCfg(set) { var s = (set || SET).scr || {}; return { on: s.on !== false, days: Math.max(1, Math.min(365, Math.round(Number(s.days)) || 30)), prizes: Array.isArray(s.prizes) ? s.prizes : clone(DEF_PRIZES) }; }
+  function prizeLabel(p) { return p.k === "disc" ? "Réduction de " + money(Number(p.v) || 0) : (p.l || (p.k === "none" ? "Pas de chance cette fois" : "Cadeau")); }
+  function catsEff(set, all) {
+    var u = U(set), ids = CATS.map(function (c) { return c.id; }), ord = (u.cats || []).filter(function (id) { return ids.indexOf(id) >= 0; });
+    ids.forEach(function (id) { if (ord.indexOf(id) < 0) ord.push(id); });
+    return ord.map(catOf).filter(function (c) { return all || !(u.chide && u.chide[c.id]); });
+  }
+  function waNum() { var d = String(CT().wa || RESTO_WHATSAPP || "").replace(/\D/g, ""); if (d.length === 10) d = "225" + d; return d; }
+  function statOf(no) { return (STATS[no] && STATS[no].s) || "recue"; }
+
+  // Texte défilant en plusieurs couleurs
+  function mqHTML(text, scroll, cols, bg) {
+    text = String(text || "").trim(); if (!text) return "";
+    var b = hx(bg, "#1D120C"), cs = (cols || []).map(function (c) { return hx(c, ""); }).filter(Boolean);
+    if (!cs.length) cs = MQC.slice(0, 3).map(function (c) { return c[0]; });
+    var ok = cs.filter(function (c) { return Math.abs(lum(c) - lum(b)) > 0.28; });
+    cs = ok.length ? ok : [lum(b) > 0.5 ? "#1D120C" : "#FFFFFF"];
+    var words = text.split(/\s+/).map(function (w, i) { return '<b style="color:' + cs[i % cs.length] + '">' + esc(w) + '</b>'; }).join(" ");
+    if (!scroll) return '<div class="mqs" style="background:' + b + '">' + words + '</div>';
+    var reps = Math.max(1, Math.min(8, Math.ceil(70 / text.length))), half = "";
+    for (var i = 0; i < reps; i++) half += '<span class="rep">' + words + '</span>';
+    var d = Math.max(8, Math.round(text.length * reps * 10 / 55));
+    return '<div class="mq" style="background:' + b + ';--d:' + d + 's"><div class="mqt"><span class="mqh">' + half + '</span><span class="mqh" aria-hidden="true">' + half + '</span></div></div>';
+  }
+  function bannerStyleHTML() {
+    var b = ADM.banner;
+    return '<label class="chk"><input type="checkbox" id="bMq"' + (b.mq ? ' checked' : '') + '>Faire défiler le texte comme un bandeau</label>' +
+      '<span class="lg">Couleurs des mots (plusieurs possibles)</span><div class="swrow">' + MQC.map(function (c) { return '<button type="button" class="sw" data-act="mqc" data-c="' + c[0] + '" aria-pressed="' + (b.cols.indexOf(c[0]) >= 0) + '" aria-label="' + c[1] + '" style="background:' + c[0] + '"></button>'; }).join("") + '</div>' +
+      '<span class="lg">Couleur du fond</span><div class="swrow">' + MQB.map(function (c) { return '<button type="button" class="sw" data-act="mqbg" data-c="' + c[0] + '" aria-pressed="' + (b.bg === c[0]) + '" aria-label="' + c[1] + '" style="background:' + c[0] + '"></button>'; }).join("") + '</div>' +
+      '<span class="lg">Aperçu</span><div id="mqPrev">' + mqHTML(b.text || "Le meilleur reste à venir", !!b.mq, b.cols, b.bg) + '</div><p class="muted small">Sans couleur choisie, des couleurs vives sont utilisées. Le même style s\'applique aux textes défilants des affiches.</p>';
+  }
+
+  // Apparence : logo, titres, couleurs, disposition
+  function applyUI() {
+    var u = U(), root = document.documentElement, st = root.style;
+    ["--bg", "--surface", "--fg", "--muted", "--line", "--soft", "--accent", "--accent-fg", "--accent-text", "--hero-a", "--hero-b", "--rad"].forEach(function (v) { st.removeProperty(v); });
+    if (hx(u.heroA, "")) st.setProperty("--hero-a", u.heroA);
+    if (hx(u.heroB, "")) st.setProperty("--hero-b", u.heroB);
+    var ac = hx(u.accent, "");
+    if (ac) { st.setProperty("--accent", ac); st.setProperty("--accent-fg", lum(ac) > 0.6 ? "#2B1B15" : "#FFFFFF"); st.setProperty("--accent-text", "color-mix(in srgb, " + ac + " 65%, var(--fg))"); }
+    var bg = hx(u.bg, "");
+    if (bg) {
+      st.setProperty("--bg", bg);
+      if (lum(bg) < 0.4) { st.setProperty("--fg", "#F7EDE5"); st.setProperty("--muted", "#BBA99E"); st.setProperty("--surface", "color-mix(in srgb, " + bg + " 86%, #fff)"); st.setProperty("--line", "color-mix(in srgb, " + bg + " 76%, #fff)"); st.setProperty("--soft", "color-mix(in srgb, " + bg + " 88%, #fff)"); }
+      else { st.setProperty("--fg", "#2B1B15"); st.setProperty("--muted", "#76665D"); st.setProperty("--surface", "#FFFFFF"); st.setProperty("--line", "color-mix(in srgb, " + bg + " 86%, #000)"); st.setProperty("--soft", "color-mix(in srgb, " + bg + " 93%, #000)"); }
+    }
+    st.setProperty("--rad", { round: "22px", soft: "12px", square: "2px" }[u.rad] || "22px");
+    var img = $("logoImg"), want = u.logo ? blobUrl(u.logo) : LOGO0;
+    if (img.getAttribute("src") !== want) { img.onerror = function () { img.onerror = null; img.src = LOGO0; }; img.src = want; }
+    $("hello").textContent = (u.hello || "").trim() || GREET;
+    $("sub").textContent = (u.sub || "").trim() || "Abidjan · chawarma, pizza, tacos, burgers";
+  }
+  function normAdm(a) {
+    if (!a.banner) a.banner = { on: false, text: "" };
+    a.banner.cols = Array.isArray(a.banner.cols) ? a.banner.cols : []; a.banner.bg = a.banner.bg || ""; a.banner.mq = !!a.banner.mq;
+    a.ui = Object.assign({ lay: "2", rad: "round", desc: true, hello: "", sub: "", logo: "", heroA: "", heroB: "", accent: "", bg: "", cats: [], chide: {} }, a.ui || {});
+    if (!Array.isArray(a.ui.cats)) a.ui.cats = []; if (!a.ui.chide) a.ui.chide = {};
+    a.contact = CT(a); a.shop = SH(a); a.scr = scrCfg(a); a.payn = PN(a);
+  }
+  function cleanAdm(a) {
+    var u = a.ui, h = function (c) { return hx(c, ""); }, ids = CATS.map(function (c) { return c.id; }), ch = {};
+    Object.keys(u.chide || {}).forEach(function (k) { if (u.chide[k] && ids.indexOf(k) >= 0) ch[k] = true; });
+    a.ui = { lay: ["1", "2", "list"].indexOf(u.lay) >= 0 ? u.lay : "2", rad: ["round", "soft", "square"].indexOf(u.rad) >= 0 ? u.rad : "round", desc: u.desc !== false, hello: (u.hello || "").trim().slice(0, 40), sub: (u.sub || "").trim().slice(0, 80), logo: u.logo || "", heroA: h(u.heroA), heroB: h(u.heroB), accent: h(u.accent), bg: h(u.bg), cats: (u.cats || []).filter(function (id) { return ids.indexOf(id) >= 0; }), chide: ch };
+    var c = a.contact; a.contact = { phone: (c.phone || "").trim().slice(0, 30), phone2: (c.phone2 || "").trim().slice(0, 30), wa: (c.wa || "").trim().slice(0, 30), addr: (c.addr || "").trim().slice(0, 120), hours: (c.hours || "").trim().slice(0, 120), note: (c.note || "").trim().slice(0, 160) };
+    a.shop = { open: a.shop.open !== false, msg: (a.shop.msg || "").trim().slice(0, 100), min: Math.max(0, Math.round(Number(a.shop.min) || 0)), auto: !!a.shop.auto, from: /^\d\d:\d\d$/.test(a.shop.from) ? a.shop.from : "11:00", to: /^\d\d:\d\d$/.test(a.shop.to) ? a.shop.to : "23:00" };
+    var pn = a.payn || {}; a.payn = { name: String(pn.name || "").trim().slice(0, 40), wave: String(pn.wave || "").trim().slice(0, 30), om: String(pn.om || "").trim().slice(0, 30), mtn: String(pn.mtn || "").trim().slice(0, 30) };
+    var sc = scrCfg(a);
+    a.scr = { on: sc.on, days: sc.days, prizes: sc.prizes.filter(function (p) { return p && (p.k === "disc" ? Number(p.v) > 0 : p.k === "free" ? (p.l || "").trim() : (p.l || "").trim() || p.k === "none"); }).map(function (p) { return { id: p.id || "p" + Math.random().toString(36).slice(2, 7), k: p.k, v: p.k === "disc" ? Math.round(Number(p.v)) : 0, l: p.k === "disc" ? "" : String(p.l || "").trim().slice(0, 100), w: Math.max(1, Math.min(10, Math.round(Number(p.w)) || 1)) }; }) };
+    a.banner.cols = a.banner.cols.filter(function (c2) { return hx(c2, ""); }); a.banner.bg = h(a.banner.bg); a.banner.mq = !!a.banner.mq;
+  }
+  function pickLogo(file) {
+    if (!ASSETS) { toast("L'envoi n'est pas disponible"); return; }
+    toast("Envoi du logo…");
+    upImg(file, 700).then(function (id) { ADM.ui.logo = id; toast("Logo ajouté. Pensez à enregistrer."); if (S.view === "admin" && S.tab === "ui") renderSheet(); }).catch(function () { toast("Le logo n'a pas pu être envoyé"); });
+  }
+  function beep() {
+    try { var C = window.AudioContext || window.webkitAudioContext, c = new C(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = 880; g.gain.setValueAtTime(0.15, c.currentTime); g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.5); o.start(); o.stop(c.currentTime + 0.5); } catch (e) {}
+  }
+
+  // Paiement mobile
+  var PAYK = { "Orange Money": "om", "MTN Money": "mtn", "Wave": "wave" };
+  function paidOf(o) { var m = myOrders().filter(function (x) { return x.no === o.no; })[0]; return !!(m && m.paid); }
+  function payBox(o, canMark) {
+    var k = PAYK[o.pay], pn = PN(), num = k && pn[k]; if (!num || o.test && false) return "";
+    var pc = STATS[o.no] && STATS[o.no].pc;
+    if (pc) return '<div class="prize"><b>Paiement confirmé ✓</b><p class="small muted">Merci, le restaurant a bien reçu votre paiement.</p></div>';
+    var h = '<div class="prize"><span class="lg">Paiement ' + esc(o.pay) + '</span><p>Envoyez <b>' + money(o.total) + '</b> au :</p><div class="code" style="letter-spacing:.05em">' + esc(num) + '</div>' + (pn.name ? '<p class="small muted">Compte : ' + esc(pn.name) + '. Mettez le numéro de commande ' + esc(o.no) + ' en référence si possible.</p>' : '');
+    h += '<div class="acts"><button type="button" class="btn sm ghost" data-act="copytxt" data-t="' + esc(num) + '">Copier le numéro</button>';
+    if (canMark) h += paidOf(o) ? '<span class="pill ok">Paiement déclaré, en vérification</span>' : '<button type="button" class="btn sm" data-act="paid" data-no="' + esc(o.no) + '">J\'ai payé</button>';
+    return h + '</div></div>';
+  }
+  function markPaid(no) {
+    saveMy(no, function (o) { o.paid = Date.now(); }).then(function () { toast("Merci, le restaurant va vérifier"); if (S.view === "done" || S.view === "hist") rerender(); }).catch(function () { toast("Impossible pour le moment, réessayez"); });
+  }
+  function confirmPay(no) {
+    if (!DB) return; var cur = (STATS[no] && STATS[no].s) || "recue";
+    STATS[no] = { s: cur, t: Date.now(), pc: 1 }; refreshOrders();
+    DB.doc("status/" + no).set({ s: cur, t: Date.now(), pc: 1 }).then(function () { toast("Paiement confirmé"); }, function () { toast("Action impossible"); });
+  }
+  // Commander à nouveau
+  function reorder(no) {
+    var o = myOrders().filter(function (x) { return x.no === no; })[0]; if (!o) return; var added = 0, miss = 0;
+    (o.lines || []).forEach(function (l) {
+      var it = ITEMS_EFF.filter(function (i) { return i.n === l.n && !i.off; })[0]; if (!it) { miss++; return; }
+      var parts = String(l.d || "").split(", ").filter(Boolean), k = 0, u;
+      if (it.sizes) { var si = it.sizes.map(function (z) { return z[0]; }).indexOf(parts[0]); k = si >= 0 ? si : 0; if (si >= 0) parts.shift(); }
+      u = it.sizes ? it.sizes[k][1] : it.p;
+      var names = []; (it.ex || []).forEach(function (z) { if (parts.indexOf(z[0]) >= 0) { u += z[1]; names.push(z[0]); } });
+      var detail = (it.sizes ? [it.sizes[k][0]] : []).concat(names).join(", "), unit = disc(u, it.id), p = promoOf(it.id), note = l.note || "", key = it.id + "|" + detail + "|" + note + "|" + unit;
+      var ex = S.cart.filter(function (c) { return c.key === key; })[0];
+      if (ex) ex.qty += l.q; else S.cart.push({ key: key, id: it.id, name: it.n, detail: detail, note: note, unit: unit, qty: l.q, promo: p ? p.pct : 0 });
+      added++;
+    });
+    persistCart(); renderBar();
+    if (!added) { toast("Ces plats ne sont plus disponibles"); return; }
+    if (miss) toast(miss + " plat(s) indisponible(s) retiré(s)");
+    showSheet("cart");
+  }
+
+  // Historique du client
+  function myOrders() {
+    var by = {}, out = []; (MYDB || []).forEach(function (o) { by[o.no] = 1; out.push(o); });
+    HIST0.forEach(function (o) { if (o && !by[o.no]) out.push(o); });
+    return out.sort(function (a, b) { return b.at - a.at; });
+  }
+  function inDb(o) { return !!(MYDB && MYDB.some(function (x) { return x.no === o.no; })); }
+  function canScratch(o) { return scrCfg().on && inDb(o) && statOf(o.no) === "livree"; }
+  function rerender() { var b = sheet.querySelector(".sheet-body"), st = b ? b.scrollTop : 0; renderSheet(); var nb = sheet.querySelector(".sheet-body"); if (nb) nb.scrollTop = st; }
+  function refreshHist() {
+    var n = myOrders().filter(function (o) { return canScratch(o) && !(o.sc && o.sc.rv); }).length;
+    $("histCnt").hidden = n === 0; $("histCnt").textContent = n; $("giftBtn").hidden = n === 0;
+    if (S.view === "hist" && !(document.activeElement && document.activeElement.tagName === "TEXTAREA" && sheet.contains(document.activeElement))) rerender();
+  }
+  function saveMy(no, fn) {
+    if (!DB || !ME) return Promise.reject(new Error("nodb"));
+    var ref = DB.doc("orders/" + ME);
+    return ref.get().then(function (s) {
+      var list = clone((s.exists && s.data().list) || []), o = list.filter(function (x) { return x.no === no; })[0];
+      if (!o) throw new Error("nf"); fn(o);
+      return ref.set({ list: list }).then(function () { MYDB = list; });
+    });
+  }
+  function dstr(t) { return new Date(t).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }); }
+  function prizeHTML(sc) {
+    var h = '<div class="prize"><span class="lg">Votre lot</span><b>' + esc(sc.l) + '</b>';
+    if (sc.code) h += '<div class="code">' + esc(sc.code) + '</div><p class="small muted">À saisir à votre prochaine commande, dans « Code cadeau ». Valable jusqu\'au ' + dstr(sc.exp) + '.</p><button type="button" class="btn sm ghost" data-act="copycode" data-c="' + esc(sc.code) + '" style="align-self:flex-start">Copier le code</button>';
+    return h + '</div>';
+  }
+  function histCard(o) {
+    var k = statOf(o.no), db = inDb(o), d = new Date(o.at), fin = k === "livree" || k === "refusee";
+    var when = dstr(o.at) + " " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    var cls = k === "recue" ? "pill new" : k === "livree" ? "pill ok" : k === "refusee" ? "pill no" : "pill";
+    var h = '<div class="ord"><div class="ord-h"><b>' + esc(o.no) + '</b>' + (db ? '<span class="' + cls + '">' + statLabel(k) + '</span>' : '<span class="pill">Envoyée par message</span>') + '</div>';
+    h += '<div class="muted small">' + when + ' · ' + esc(o.mode) + (o.zone ? ' · ' + esc(o.zone) : '') + '</div>';
+    if (db && !fin) h += stepsHTML(k) + '<p class="small muted">Préparation estimée : ' + PREP + '. Le statut se met à jour tout seul.</p>';
+    if (k === "refusee") h += '<p class="small">Le restaurant n\'a pas pu préparer cette commande.</p>';
+    h += '<ul>' + (o.lines || []).map(function (l) { return '<li>' + l.q + ' × ' + esc(l.n) + (l.d ? ' (' + esc(l.d) + ')' : '') + '</li>'; }).join("") + '</ul>';
+    if (o.cp) h += '<div class="small muted">Code ' + esc(o.cp.code) + ' · ' + esc(o.cp.l) + '</div>';
+    h += '<div class="ord-h"><span class="muted small">Total</span><b>' + money(o.total) + '</b></div>';
+    if (db && k !== "refusee" && k !== "livree" || (db && k === "livree" && PAYK[o.pay] && !(STATS[o.no] && STATS[o.no].pc) && !o.paid)) h += payBox(o, true);
+    h += '<div class="acts"><button type="button" class="btn sm ghost" data-act="reorder" data-no="' + esc(o.no) + '">Commander à nouveau</button></div>';
+    if (canScratch(o)) h += (!o.sc || !o.sc.rv) ? '<button type="button" class="btn center" data-act="scratch" data-no="' + esc(o.no) + '">🎁 Gratter ma carte</button>' : prizeHTML(o.sc);
+    if (db && k === "livree") {
+      if (o.fb) h += '<div class="fbv"><b>Votre avis :</b> ' + esc(o.fb.e || "") + ' ' + esc(o.fb.t || "") + '</div>';
+      else h += '<div class="grp"><span class="lg">Votre avis sur cette commande</span><div class="emo fbe">' + FBE.map(function (e) { return '<button type="button" data-act="fbe" data-no="' + esc(o.no) + '" data-e="' + e + '" aria-pressed="' + (S.fbe[o.no] === e) + '" aria-label="Réaction ' + e + '">' + e + '</button>'; }).join("") + '</div><textarea rows="2" maxlength="300" data-fbt="' + esc(o.no) + '" aria-label="Votre commentaire" placeholder="J\'ai aimé le plat, la livraison était rapide…">' + esc(S.fbt[o.no] || "") + '</textarea><button type="button" class="btn sm" data-act="fbsend" data-no="' + esc(o.no) + '" style="align-self:flex-start">Envoyer mon avis</button></div>';
+    }
+    return h + '</div>';
+  }
+  function histHTML() {
+    var os = myOrders(), h = head("Mes commandes") + '<div class="sheet-body">';
+    if (!os.length) h += '<div class="empty">Vous n\'avez pas encore passé de commande.<br>Elle apparaîtra ici avec son suivi.</div>';
+    else h += os.map(histCard).join("");
+    if (os.length && !MYDB) h += '<p class="muted small">Le suivi en direct n\'est pas disponible dans ce mode d\'ouverture.</p>';
+    return h + '</div><div class="sheet-foot"><button type="button" class="btn center" data-act="close">Voir le menu</button></div>';
+  }
+
+  // Carte à gratter
+  function drawPrize(cfg) {
+    var ps = cfg.prizes.filter(function (p) { return p && (Number(p.w) || 0) > 0; });
+    if (!ps.length) return { k: "none", v: 0, l: "Merci pour votre commande !" };
+    var r = Math.random() * ps.reduce(function (a, p) { return a + Number(p.w); }, 0);
+    for (var i = 0; i < ps.length; i++) { r -= Number(ps[i].w); if (r < 0) return ps[i]; }
+    return ps[ps.length - 1];
+  }
+  function genCode() { var A = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", s = "TOL"; for (var i = 0; i < 5; i++) s += A.charAt(Math.floor(Math.random() * A.length)); return s; }
+  function openScratch(no) {
+    var o = myOrders().filter(function (x) { return x.no === no; })[0]; if (!o || !canScratch(o)) return;
+    if (o.sc) { S.scNo = no; S.scDone = !!o.sc.rv; showSheet("scratch"); return; }
+    var cfg = scrCfg(), p = drawPrize(cfg), sc = { k: p.k, v: Number(p.v) || 0, l: prizeLabel(p), code: p.k === "none" ? "" : genCode(), exp: Date.now() + cfg.days * 864e5, rv: false, at: Date.now() };
+    toast("Préparation de votre carte…");
+    var wr = sc.code ? DB.doc("coupons/" + sc.code).set({ k: sc.k, v: sc.v, l: sc.l, ph: pkey(o.phone), src: o.no, exp: sc.exp, used: false, at: sc.at }) : Promise.resolve();
+    wr.then(function () { return saveMy(no, function (x) { if (!x.sc) x.sc = sc; }); }).then(function () { S.scNo = no; S.scDone = false; showSheet("scratch"); }).catch(function () { toast("Impossible de préparer la carte, réessayez"); });
+  }
+  function scratchHTML() {
+    var o = myOrders().filter(function (x) { return x.no === S.scNo; })[0];
+    if (!o || !o.sc) return head("Carte à gratter") + '<div class="sheet-body"><div class="empty">Carte introuvable.</div></div><div class="sheet-foot"><button type="button" class="btn center" data-act="tohist">Mes commandes</button></div>';
+    var sc = o.sc, rv = !!sc.rv;
+    return head("Votre carte à gratter") + '<div class="sheet-body"><p>' + (rv ? 'Voici votre lot.' : 'Grattez la carte avec votre doigt pour découvrir votre lot.') + '</p><div class="scw"><div class="scp"><span>' + (sc.k === "none" ? '🍀' : '🎉') + '</span><b>' + esc(sc.l) + '</b></div>' + (rv ? '' : '<canvas id="scCv" width="360" height="225" aria-label="Zone à gratter"></canvas>') + '</div><div id="scRes">' + (rv ? prizeHTML(sc) : '') + '</div></div><div class="sheet-foot">' + (rv ? '' : '<button type="button" class="btn ghost center" data-act="screveal">Révéler sans gratter</button>') + '<button type="button" class="btn center" data-act="tohist">Mes commandes</button></div>';
+  }
+  function revealNow() {
+    if (S.view !== "scratch" || S.scDone) return; S.scDone = true;
+    var cv = $("scCv"); if (cv) { cv.style.opacity = 0; cv.style.pointerEvents = "none"; }
+    var o = myOrders().filter(function (x) { return x.no === S.scNo; })[0];
+    if ($("scRes") && o && o.sc) $("scRes").innerHTML = prizeHTML(o.sc);
+    var bt = sheet.querySelector('[data-act="screveal"]'); if (bt) bt.remove();
+    saveMy(S.scNo, function (x) { if (x.sc) x.sc.rv = true; }).catch(function () { toast("Lot non enregistré, notez votre code"); });
+  }
+  function initScratch() {
+    var cv = $("scCv"); if (!cv) return;
+    var ctx = cv.getContext("2d"), W = cv.width, H = cv.height, g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, "#C4C9CE"); g.addColorStop(0.5, "#EEF0F2"); g.addColorStop(1, "#A9AFB5"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    for (var i = 0; i < 60; i++) { ctx.fillStyle = "rgba(255,255,255," + (Math.random() * 0.5) + ")"; ctx.beginPath(); ctx.arc(Math.random() * W, Math.random() * H, Math.random() * 3 + 1, 0, 7); ctx.fill(); }
+    ctx.fillStyle = "rgba(60,60,70,.6)"; ctx.font = "800 28px 'Bricolage Grotesque', sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("GRATTEZ ICI", W / 2, H / 2);
+    var down = false, last = null, n = 0;
+    function pos(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * W / r.width, (e.clientY - r.top) * H / r.height]; }
+    function stroke(e) {
+      var p = pos(e); ctx.globalCompositeOperation = "destination-out"; ctx.lineCap = "round"; ctx.lineWidth = 48; ctx.beginPath(); ctx.moveTo(last ? last[0] : p[0], last ? last[1] : p[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); last = p;
+      if (++n % 5 === 0) check();
+    }
+    function check() { var d = ctx.getImageData(0, 0, W, H).data, c = 0, t = 0; for (var k = 3; k < d.length; k += 64) { t++; if (d[k] < 20) c++; } if (c / t > 0.5) revealNow(); }
+    cv.addEventListener("pointerdown", function (e) { down = true; last = null; try { cv.setPointerCapture(e.pointerId); } catch (x) {} stroke(e); e.preventDefault(); });
+    cv.addEventListener("pointermove", function (e) { if (down) { stroke(e); e.preventDefault(); } });
+    ["pointerup", "pointercancel"].forEach(function (ev) { cv.addEventListener(ev, function () { down = false; last = null; check(); }); });
+  }
+  function copyText(txt, el) {
+    function sel() { if (el) { var r = document.createRange(); r.selectNodeContents(el); var g = window.getSelection(); g.removeAllRanges(); g.addRange(r); } toast("Sélectionné, copiez-le"); }
+    try { navigator.clipboard.writeText(txt).then(function () { toast("Copié"); }, sel); } catch (e) { sel(); }
+  }
+  function sendFb(no) {
+    var e = S.fbe[no] || "", t = (S.fbt[no] || "").trim();
+    if (!e && !t) { toast("Choisissez un emoji ou écrivez un mot"); return; }
+    saveMy(no, function (o) { o.fb = { e: e, t: t.slice(0, 300), at: Date.now() }; }).then(function () { toast("Merci pour votre avis !"); refreshHist(); }).catch(function () { toast("Avis non envoyé, réessayez"); });
+  }
+
+  // Code cadeau au moment de commander
+  function discAmt() { return S.cp && S.cp.k === "disc" ? Math.min(S.cp.v, subtotal()) : 0; }
+  function cpMsgHTML() {
+    if (S.cp) return '<span style="color:var(--good)">✓ ' + esc(S.cp.l) + ' appliqué</span> <button type="button" class="rm" data-act="rmcode">Retirer</button>';
+    return S.cpErr ? '<span style="color:var(--err)">' + esc(S.cpErr) + '</span>' : '';
+  }
+  function applyCode() {
+    var code = ($("cCode").value || "").toUpperCase().replace(/[^A-Z0-9]/g, ""), k = pkey(S.phone);
+    function say(m) { S.cpErr = m; $("cpMsg").innerHTML = cpMsgHTML(); }
+    if (!DB) { say("Les codes ne sont pas disponibles ici."); return; }
+    if (!code) { say("Saisissez votre code."); return; }
+    if (!k) { say("Entrez d'abord votre numéro de téléphone."); $("cPhone").focus(); return; }
+    DB.doc("coupons/" + code).get().then(function (s) {
+      if (!s.exists) return say("Code inconnu.");
+      var d = s.data();
+      if (d.used) return say("Ce code a déjà été utilisé.");
+      if (d.exp && d.exp < Date.now()) return say("Ce code a expiré.");
+      if (d.ph !== k) return say("Ce code est lié à un autre numéro.");
+      S.cp = { code: code, k: d.k, v: Number(d.v) || 0, l: d.l, ph: k }; S.cpErr = ""; $("cpMsg").innerHTML = cpMsgHTML(); $("sum").innerHTML = sumHTML();
+    }).catch(function () { say("Vérification impossible, réessayez."); });
+  }
+
+  // Contact
+  function contactHTML() {
+    var c = CT(), wa = waNum(), h = head("Besoin d'aide ?") + '<div class="sheet-body">';
+    if (c.note) h += '<p class="stat">' + esc(c.note) + '</p>';
+    [c.phone, c.phone2].filter(Boolean).forEach(function (p) {
+      h += '<div class="ctrow"><div><span class="lg">Téléphone</span><b class="sel">' + esc(p) + '</b></div><div class="acts"><a class="btn sm" href="tel:' + esc(p.replace(/[^\d+]/g, "")) + '">Appeler</a><button type="button" class="btn sm ghost" data-act="copytxt" data-t="' + esc(p) + '">Copier</button></div></div>';
+    });
+    if (wa) h += '<a class="btn center" target="_blank" rel="noopener" href="https://wa.me/' + wa + '">Écrire sur WhatsApp</a>';
+    if (c.addr) h += '<div class="ctrow"><div><span class="lg">Adresse</span><b class="sel">' + esc(c.addr) + '</b></div></div>';
+    if (c.hours) h += '<div class="ctrow"><div><span class="lg">Horaires</span><b class="sel">' + esc(c.hours) + '</b></div></div>';
+    if (!c.phone && !c.phone2 && !wa && !c.addr && !c.hours && !c.note) h += '<div class="empty">Les coordonnées ne sont pas encore renseignées.</div>';
+    return h + '</div><div class="sheet-foot"><button type="button" class="btn center" data-act="close">Retour au menu</button></div>';
+  }
+
+  // Administration : réglages, cartes à gratter, avis
+  function adminUiTab() {
+    var u = ADM.ui, sh = ADM.shop, c = ADM.contact, h = "";
+    h += '<fieldset class="grp"><legend>Boutique</legend><label class="chk"><input type="checkbox" id="shOpen"' + (sh.open !== false ? ' checked' : '') + '>Je reçois les commandes</label><p class="muted small">Décochez pour mettre les commandes en pause (fermé, rupture). Le menu reste visible.</p>' +
+      '<div class="field"><label class="small muted" for="shMsg">Message pendant la pause</label><input type="text" id="shMsg" data-sh="msg" maxlength="100" placeholder="Nous rouvrons demain à 11 h" value="' + esc(sh.msg || "") + '"></div>' +
+      '<div class="field"><label class="small muted" for="shMin">Commande minimum en FCFA (0 = aucun)</label><input type="number" id="shMin" data-sh="min" min="0" step="500" inputmode="numeric" value="' + (Number(sh.min) || 0) + '"></div>' +
+      '<label class="chk"><input type="checkbox" id="shAuto"' + (sh.auto ? ' checked' : '') + '>Ouvrir et fermer automatiquement selon les horaires</label><div class="g2"><div class="field"><label class="small muted" for="shFrom">Ouverture</label><input type="time" id="shFrom" data-sh="from" value="' + esc(sh.from || "11:00") + '"></div><div class="field"><label class="small muted" for="shTo">Fermeture</label><input type="time" id="shTo" data-sh="to" value="' + esc(sh.to || "23:00") + '"></div></div></fieldset>';
+    var pn = ADM.payn;
+    h += '<fieldset class="grp"><legend>Paiement mobile</legend><p class="muted small">Le client voit ces numéros après sa commande, avec le montant à envoyer. Laissez vide un moyen que vous n\'utilisez pas.</p>' +
+      [["name", "Nom du compte (ex. TOLLEST)", "text"], ["wave", "Numéro Wave", "tel"], ["om", "Numéro Orange Money", "tel"], ["mtn", "Numéro MTN Money", "tel"]].map(function (f) { return '<div class="field"><label class="small muted" for="pn_' + f[0] + '">' + f[1] + '</label><input type="' + f[2] + '" id="pn_' + f[0] + '" data-pn="' + f[0] + '" maxlength="40" value="' + esc(pn[f[0]] || "") + '"></div>'; }).join("") + '</fieldset>';
+    h += '<fieldset class="grp"><legend>Logo et titres</legend><div class="ephoto"><span class="logoprev"><img src="' + (u.logo ? blobUrl(u.logo) : LOGO0) + '" alt=""></span><div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start"><label class="btn sm ghost" for="uLogo">Changer le logo</label><input class="file" type="file" id="uLogo" accept="image/*">' + (u.logo ? '<button type="button" class="rm" data-act="rmlogo">Remettre le logo d\'origine</button>' : '') + '</div></div>' +
+      '<div class="field"><label class="small muted" for="uHello">Titre d\'accueil (vide = Bonjour / Bonsoir)</label><input type="text" id="uHello" data-u="hello" maxlength="40" placeholder="Bienvenue chez TOLLEST" value="' + esc(u.hello || "") + '"></div>' +
+      '<div class="field"><label class="small muted" for="uSub">Sous-titre</label><input type="text" id="uSub" data-u="sub" maxlength="80" placeholder="Abidjan · chawarma, pizza, tacos, burgers" value="' + esc(u.sub || "") + '"></div></fieldset>';
+    h += '<fieldset class="grp"><legend>Couleurs et fond</legend><p class="muted small">Ces couleurs remplacent celles du thème de fête.</p><div class="pres">' + PRESETS.map(function (p, i) { return '<button type="button" class="pre" data-act="preset" data-i="' + i + '" style="background:linear-gradient(135deg,' + p[1] + ',' + p[2] + ')">' + p[0] + '</button>'; }).join("") + '</div>' +
+      '<label class="szrow"><span>Haut de page, début</span><input type="color" data-u="heroA" value="' + hx(u.heroA, "#D5412A") + '"></label><label class="szrow"><span>Haut de page, fin</span><input type="color" data-u="heroB" value="' + hx(u.heroB, "#8A2212") + '"></label><label class="szrow"><span>Boutons et accents</span><input type="color" data-u="accent" value="' + hx(u.accent, "#C93A1D") + '"></label>' +
+      '<span class="lg">Fond de la page</span><div class="swrow">' + BGS.map(function (b2) { return '<button type="button" class="sw" data-act="bg" data-c="' + b2[1] + '" aria-pressed="' + ((u.bg || "") === b2[1]) + '" aria-label="' + b2[0] + '" style="background:' + (b2[1] || "#FBF5EE") + '"></button>'; }).join("") + '</div>' +
+      '<button type="button" class="btn sm ghost" data-act="resetcol" style="align-self:flex-start">Revenir aux couleurs d\'origine</button></fieldset>';
+    h += '<fieldset class="grp"><legend>Disposition des plats</legend><div class="seg">' + [["2", "2 colonnes"], ["1", "1 colonne"], ["list", "Liste"]].map(function (o) { return '<label><input type="radio" name="lay" value="' + o[0] + '"' + (u.lay === o[0] ? ' checked' : '') + '><span>' + o[1] + '</span></label>'; }).join("") + '</div>' +
+      '<div class="seg">' + [["round", "Arrondi"], ["soft", "Doux"], ["square", "Carré"]].map(function (o) { return '<label><input type="radio" name="rad" value="' + o[0] + '"' + (u.rad === o[0] ? ' checked' : '') + '><span>' + o[1] + '</span></label>'; }).join("") + '</div>' +
+      '<label class="chk"><input type="checkbox" id="uDesc"' + (u.desc !== false ? ' checked' : '') + '>Afficher les descriptions des plats</label>' +
+      '<span class="lg">Ordre des catégories</span>' + catsEff(ADM, true).map(function (c2) { return '<div class="prow"><span>' + c2.n + '</span><span class="acts"><button type="button" class="btn sm ghost" data-act="catup" data-id="' + c2.id + '" aria-label="Monter ' + c2.n + '">↑</button><button type="button" class="btn sm ghost" data-act="catdn" data-id="' + c2.id + '" aria-label="Descendre ' + c2.n + '">↓</button><label class="chk small"><input type="checkbox" data-chide="' + c2.id + '"' + (u.chide && u.chide[c2.id] ? '' : ' checked') + '>Visible</label></span></div>'; }).join("") + '</fieldset>';
+    h += '<fieldset class="grp"><legend>Contact d\'urgence pour les clients</legend>' +
+      [["phone", "Téléphone principal", "tel", "07 00 00 00 00"], ["phone2", "Deuxième téléphone", "tel", ""], ["wa", "WhatsApp (numéro)", "tel", "07 00 00 00 00"], ["addr", "Adresse du restaurant", "text", "Abidjan, Cocody…"], ["hours", "Horaires", "text", "Tous les jours, 11 h – 23 h"], ["note", "Message pour les clients", "text", "Un souci avec votre commande ? Appelez-nous."]].map(function (f) {
+        return '<div class="field"><label class="small muted" for="ct_' + f[0] + '">' + f[1] + '</label><input type="' + f[2] + '" id="ct_' + f[0] + '" data-c="' + f[0] + '" maxlength="160" placeholder="' + f[3] + '" value="' + esc(c[f[0]] || "") + '"></div>';
+      }).join("") + '</fieldset>';
+    if (window.__logout) h += '<button type="button" class="btn sm ghost" data-act="logout" style="align-self:flex-start">Se déconnecter de l\'administration</button>';
+    return h;
+  }
+  function couponListHTML() {
+    var cl = Object.keys(COUPONS).map(function (k) { return Object.assign({ code: k }, COUPONS[k]); }).sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
+    if (!cl.length) return '<div class="empty">Aucun code pour l\'instant.</div>';
+    return cl.slice(0, 40).map(function (c) {
+      var o = ORDERS.filter(function (x) { return x.no === c.src; })[0], st = c.used ? "Utilisé" : c.exp && c.exp < Date.now() ? "Expiré" : "À utiliser";
+      return '<div class="prow"><span><b>' + esc(c.code) + '</b> · ' + esc(c.l) + (o ? ' · ' + esc(o.name) : '') + '</span><span class="pill' + (c.used ? ' ok' : '') + '">' + st + '</span></div>';
+    }).join("");
+  }
+  function adminScrTab() {
+    var c = ADM.scr, tot = c.prizes.reduce(function (a, p) { return a + (Math.max(0, Number(p.w)) || 0); }, 0);
+    var h = '<p class="muted small">Quand une commande est livrée, le client peut gratter une carte. Le lot est tiré au hasard dans la liste ci-dessous. Une réduction ou un cadeau donne un code à saisir à la commande suivante.</p>';
+    h += '<label class="chk"><input type="checkbox" id="sOn"' + (c.on ? ' checked' : '') + '>Activer les cartes à gratter</label><div class="field"><label class="small muted" for="sDays">Validité du code en jours</label><input type="number" id="sDays" data-s="days" min="1" max="365" inputmode="numeric" value="' + c.days + '"></div>';
+    h += '<div class="grp"><span class="lg">Lots possibles</span>' + (c.prizes.length ? c.prizes.map(function (p, i) {
+      var pct = tot ? Math.round((Math.max(0, Number(p.w)) || 0) / tot * 100) : 0;
+      return '<div class="ord"><div class="g2"><div class="field"><label class="small muted" for="pk' + i + '">Type</label><select id="pk' + i + '" data-pz="' + i + '" data-k="k"><option value="disc"' + (p.k === "disc" ? ' selected' : '') + '>Réduction en FCFA</option><option value="free"' + (p.k === "free" ? ' selected' : '') + '>Cadeau</option><option value="none"' + (p.k === "none" ? ' selected' : '') + '>Pas de lot</option></select></div>' +
+        (p.k === "disc" ? '<div class="field"><label class="small muted" for="pv' + i + '">Montant en FCFA</label><input type="number" id="pv' + i + '" data-pz="' + i + '" data-k="v" min="50" step="50" inputmode="numeric" value="' + (Number(p.v) || "") + '"></div>' : '<div class="field"><label class="small muted" for="pl' + i + '">Texte du lot</label><input type="text" id="pl' + i + '" data-pz="' + i + '" data-k="l" maxlength="100" value="' + esc(p.l || "") + '"></div>') + '</div>' +
+        '<div class="g2"><div class="field"><label class="small muted" for="pw' + i + '">Chances (1 à 10)</label><input type="number" id="pw' + i + '" data-pz="' + i + '" data-k="w" min="1" max="10" inputmode="numeric" value="' + (Number(p.w) || 1) + '"></div><div class="pillrow"><span class="pill">≈ ' + pct + ' %</span><button type="button" class="rm" data-act="rmprize" data-i="' + i + '">Retirer</button></div></div></div>';
+    }).join("") : '<p class="muted small">Aucun lot : les clients verront « Merci pour votre commande ».</p>') +
+      '<div class="tools"><button type="button" class="btn sm ghost" data-act="addprize" data-k="disc">Ajouter une réduction</button><button type="button" class="btn sm ghost" data-act="addprize" data-k="free">Ajouter un cadeau</button></div></div>';
+    return h + '<div class="grp"><span class="lg">Codes distribués</span><div id="cpList" style="display:flex;flex-direction:column;gap:8px">' + couponListHTML() + '</div></div>';
+  }
+  function fbListHTML() {
+    var os = ORDERS.filter(function (o) { return o.fb; }).sort(function (a, b) { return b.fb.at - a.fb.at; });
+    if (!os.length) return '<div class="empty">Aucun avis pour l\'instant.<br>Les clients peuvent en laisser après la livraison, depuis « Mes commandes ».</div>';
+    var cnt = {}; os.forEach(function (o) { if (o.fb.e) cnt[o.fb.e] = (cnt[o.fb.e] || 0) + 1; });
+    var h = '<div class="emo" aria-label="Résumé des réactions">' + Object.keys(cnt).map(function (e) { return '<span class="pill">' + e + ' ' + cnt[e] + '</span>'; }).join("") + '</div>';
+    return h + os.map(function (o) { return '<div class="ord"><div class="ord-h"><b>' + esc(o.fb.e || "💬") + ' ' + esc(o.name) + '</b><span class="muted small">' + dstr(o.fb.at) + ' · ' + esc(o.no) + '</span></div>' + (o.fb.t ? '<div style="overflow-wrap:anywhere">' + esc(o.fb.t) + '</div>' : '') + '<div class="muted small">' + (o.lines || []).map(function (l) { return l.q + ' × ' + esc(l.n); }).join(', ') + '</div></div>'; }).join("");
+  }
+  function adminFbTab() { return '<div id="fbList" style="display:flex;flex-direction:column;gap:12px">' + fbListHTML() + '</div>'; }
+
+  // Administration
+  function nextStat(o) {
+    var cur = (STATS[o.no] && STATS[o.no].s) || "recue", keys = STAT.map(function (s) { return s[0]; }), i = keys.indexOf(cur);
+    if (i < 0 || cur === "livree") return null;
+    var n = keys[i + 1]; if (n === "livraison" && o.mode !== "Livraison") n = keys[i + 2];
+    return n || null;
+  }
+  function orderCard(o) {
+    var k = (STATS[o.no] && STATS[o.no].s) || "recue", d = new Date(o.at), n = nextStat(o), closed = k === "livree" || k === "refusee";
+    var when = d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    var cls = k === "recue" ? "pill new" : k === "livree" ? "pill ok" : k === "refusee" ? "pill no" : "pill";
+    var h = '<div class="ord"><div class="ord-h"><b>' + esc(o.no) + '</b><span>' + (o.test ? '<span class="pill test">TEST</span> ' : '') + '<span class="' + cls + '">' + statLabel(k) + '</span></span></div>';
+    h += '<div class="muted small">' + when + ' · ' + esc(o.mode) + (o.zone ? ' · ' + esc(o.zone) : '') + ' · ' + esc(o.pay) + '</div>';
+    h += '<div><b>' + esc(o.name) + '</b> · <span>' + esc(o.phone) + '</span></div>';
+    if (o.addr) h += '<div class="small">' + esc(o.addr) + '</div>';
+    h += '<ul>' + (o.lines || []).map(function (l) { return '<li>' + l.q + ' × ' + esc(l.n) + (l.d ? ' (' + esc(l.d) + ')' : '') + (l.note ? ' — ' + esc(l.note) : '') + '</li>'; }).join("") + '</ul>';
+    if (o.cp) { var cc = COUPONS[o.cp.code], okc = cc && cc.src && statOf(cc.src) === "livree" && cc.k === o.cp.k && Number(cc.v) === Number(o.cp.v) || (cc && cc.k === "free" && o.cp.k === "free" && cc.src && statOf(cc.src) === "livree"); h += '<div class="small"><span class="pill test">CODE</span> ' + esc(o.cp.code) + ' · ' + esc(o.cp.l) + (o.cp.k === "disc" ? ' (− ' + money(o.cp.v) + ')' : '') + (okc ? ' · <b>code authentique</b>' : ' · <b>à vérifier</b>') + '</div>'; }
+    if (PAYK[o.pay]) { var pcd = STATS[o.no] && STATS[o.no].pc; h += '<div class="small">' + (pcd ? '<span class="pill ok">Paiement confirmé</span>' : o.paid ? '<span class="pill new">Client dit avoir payé</span> <button type="button" class="btn sm" data-act="confirmpay" data-no="' + esc(o.no) + '">Paiement reçu</button>' : '<span class="pill">Paiement à vérifier</span> <button type="button" class="btn sm ghost" data-act="confirmpay" data-no="' + esc(o.no) + '">Paiement reçu</button>') + '</div>'; }
+    if (o.sc && o.sc.rv) h += '<div class="muted small">Carte grattée : ' + esc(o.sc.l) + '</div>';
+    if (o.fb) h += '<div class="small"><b>Avis :</b> ' + esc(o.fb.e || "") + ' ' + esc(o.fb.t || "") + '</div>';
+    h += '<div class="ord-h"><span class="muted small">' + (o.fee ? 'Livraison ' + money(o.fee) + ' · ' : '') + 'Total</span><b>' + money(o.total) + '</b></div>';
+    if (!closed) h += '<div class="acts">' + (n ? '<button type="button" class="btn sm" data-act="next" data-no="' + esc(o.no) + '" data-s="' + n + '">' + STAT_BTN[n] + '</button>' : '') + (k === "recue" ? '<button type="button" class="btn sm ghost" data-act="next" data-no="' + esc(o.no) + '" data-s="refusee">Refuser</button>' : '') + '</div>';
+    return h + '</div>';
+  }
+  function ordersHTML() {
+    var day = ORDERS.filter(function (o) { return !o.test && statOf(o.no) !== "refusee" && new Date(o.at).toDateString() === new Date().toDateString(); });
+    var st = '<div class="stats"><div><b>' + day.length + '</b><span>commande' + (day.length > 1 ? 's' : '') + ' aujourd\'hui</span></div><div><b>' + day.reduce(function (a, o) { return a + (o.total || 0); }, 0).toLocaleString("fr-FR") + '</b><span>FCFA aujourd\'hui</span></div></div>';
+    if (!ORDERS.length) return st + '<div class="empty">Aucune commande pour l\'instant.<br>Utilisez « Commande test » pour voir comment elle arrive ici.</div>';
+    return st + ORDERS.map(orderCard).join("");
+  }
+  function adminOrdersTab() {
+    return '<div class="tools"><button type="button" class="btn sm" data-act="testorder">Commande test</button><button type="button" class="btn sm ghost" data-act="deltests">Supprimer les tests</button></div><div id="ordList" style="display:flex;flex-direction:column;gap:12px">' + ordersHTML() + '</div>';
+  }
+  function adminPromoTab() {
+    var h = '<fieldset class="grp"><legend>Thème de fête</legend>' + THEMES.map(function (t) {
+      return '<label class="opt"><span><input type="radio" name="theme" value="' + t[0] + '"' + (ADM.theme === t[0] ? ' checked' : '') + '>' + t[1] + '</span><span class="pr">' + esc(t[2]) + '</span></label>';
+    }).join("") + '</fieldset>';
+    h += '<div class="grp"><span class="lg">Message en haut du menu</span><label class="chk"><input type="checkbox" id="bOn"' + (ADM.banner.on ? ' checked' : '') + '>Afficher le message</label>' +
+      '<input type="text" id="bText" maxlength="120" aria-label="Texte du message" placeholder="Joyeuses fêtes ! -20% sur les pizzas ce week-end" value="' + esc(ADM.banner.text) + '">' +
+      '<div class="emo" aria-label="Emojis à ajouter">' + EMO.map(function (e) { return '<button type="button" data-act="emo" data-e="' + e + '">' + e + '</button>'; }).join("") + '</div>' + bannerStyleHTML() + '</div>';
+    var eff = effItems(ADM, true), fi = function (id) { return eff.filter(function (x) { return x.id === id; })[0]; };
+    var ids = Object.keys(ADM.promos || {}).filter(function (id) { return fi(id); });
+    h += '<div class="grp"><span class="lg">Promos sur les plats</span>' + (ids.length ? ids.map(function (id) {
+      var p = ADM.promos[id], expired = p.until && p.until < today();
+      return '<div class="prow"><span><b>' + esc(fi(id).n) + '</b> · -' + p.pct + '%' + (p.label ? ' · ' + esc(p.label) : '') + (p.until ? ' · jusqu\'au ' + frDate(p.until) : '') + (expired ? ' (terminée)' : '') + '</span><button type="button" class="rm" data-act="rmpromo" data-id="' + id + '">Retirer</button></div>';
+    }).join("") : '<p class="muted small">Aucune promo pour l\'instant.</p>') + '</div>';
+    h += '<div class="grp"><span class="lg">Ajouter une promo</span><div class="field"><label class="small muted" for="pItem">Plat</label><select id="pItem">' + eff.filter(function (i) { return !i.hide && i.n; }).map(function (i) { return '<option value="' + i.id + '">' + esc(i.n) + '</option>'; }).join("") + '</select></div>' +
+      '<div class="g2"><div class="field"><label class="small muted" for="pPct">Réduction en %</label><input type="number" id="pPct" min="1" max="90" inputmode="numeric" value="20"></div><div class="field"><label class="small muted" for="pUntil">Jusqu\'au (facultatif)</label><input type="date" id="pUntil"></div></div>' +
+      '<div class="field"><label class="small muted" for="pLabel">Nom de l\'offre (facultatif)</label><input type="text" id="pLabel" maxlength="30" placeholder="Offre de Noël"></div>' +
+      '<button type="button" class="btn sm ghost" data-act="addpromo" style="align-self:flex-start">Ajouter la promo</button><p class="err" id="pErr" role="alert"></p></div>';
+    return h;
+  }
+  function adminZonesTab() {
+    return '<p class="muted small">Livraison assurée par Yango. Indiquez pour chaque quartier les frais estimés affichés au client.</p>' +
+      (ADM.zones || []).map(function (z, i) {
+        return '<div class="zrow"><input type="text" aria-label="Quartier" data-z="' + i + '" data-k="n" value="' + esc(z.n) + '"><input type="number" aria-label="Frais en FCFA" inputmode="numeric" min="0" step="100" data-z="' + i + '" data-k="f" value="' + z.f + '"><button type="button" class="rm" data-act="rmzone" data-i="' + i + '">Retirer</button></div>';
+      }).join("") + '<button type="button" class="btn sm ghost" data-act="addzone" style="align-self:flex-start">Ajouter un quartier</button>';
+  }
+  function tgt(id) {
+    id = id || S.edit;
+    var c = ADM.custom.filter(function (x) { return x.id === id; })[0];
+    if (c) return c;
+    if (!ADM.ov[id]) ADM.ov[id] = {};
+    return ADM.ov[id];
+  }
+  function thumb(i, c) { return '<span class="thumb" style="--h:' + c.h + '">' + (i.imgId ? '<img src=\"' + blobUrl(i.imgId) + '\" alt="" loading="lazy">' : esc((i.n || "?").charAt(0))) + '</span>'; }
+  function adminMenuTab() {
+    if (S.edit) return editHTML();
+    var all = effItems(ADM, true);
+    var h = '<div class="tools"><button type="button" class="btn sm" data-act="newdish">Ajouter un plat</button></div>';
+    CATS.forEach(function (c) {
+      var rows = all.filter(function (i) { return i.c === c.id; }); if (!rows.length) return;
+      h += '<div class="grp"><span class="lg">' + c.n + '</span>' + rows.map(function (i) {
+        return '<div class="mrow">' + thumb(i, c) + '<div class="mt"><b>' + esc(i.n || "Sans nom") + '</b><span>' + (i.sizes ? 'dès ' : '') + money(rawFrom(i) || 0) + (i.off ? ' · indisponible' : '') + (i.hide ? ' · retiré' : '') + '</span></div>' +
+          '<div class="side"><label class="chk small"><input type="checkbox" data-av="' + i.id + '"' + (i.off ? '' : ' checked') + '>Dispo</label><button type="button" class="btn sm ghost" data-act="editdish" data-id="' + i.id + '">Modifier</button></div></div>';
+      }).join("") + '</div>';
+    });
+    return h;
+  }
+  function editHTML() {
+    var it = effItems(ADM, true).filter(function (x) { return x.id === S.edit; })[0];
+    if (!it) { S.edit = null; return adminMenuTab(); }
+    var custom = !!ADM.custom.filter(function (x) { return x.id === it.id; })[0], c = catOf(it.c) || CATS[0];
+    var h = '<div class="tools"><button type="button" class="btn sm ghost" data-act="enddish">← Terminer</button></div>';
+    h += '<div class="ephoto">' + thumb(it, c) + '<div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start"><label class="btn sm ghost" for="eFile">' + (it.imgId ? 'Changer la photo' : 'Ajouter une photo') + '</label><input class="file" type="file" id="eFile" accept="image/*">' + (it.imgId ? '<button type="button" class="rm" data-act="rmphoto">Retirer la photo</button>' : '') + '</div></div>';
+    h += '<div class="field"><label class="lg" for="eName">Nom du plat</label><input type="text" id="eName" data-e="n" maxlength="60" value="' + esc(it.n) + '"></div>';
+    h += '<div class="field"><label class="lg" for="eDesc">Description</label><input type="text" id="eDesc" data-e="d" maxlength="100" value="' + esc(it.d) + '"></div>';
+    if (custom) h += '<div class="field"><label class="lg" for="eCat">Catégorie</label><select id="eCat" data-e="c">' + CATS.map(function (k) { return '<option value="' + k.id + '"' + (k.id === it.c ? ' selected' : '') + '>' + k.n + '</option>'; }).join("") + '</select></div>';
+    if (it.sizes) h += '<fieldset class="grp"><legend>Prix en FCFA</legend>' + it.sizes.map(function (z, k) {
+      return '<label class="szrow"><span>' + esc(z[0]) + '</span><input type="number" min="0" step="50" inputmode="numeric" data-sz="' + k + '" value="' + z[1] + '"></label>';
+    }).join("") + '</fieldset>';
+    else h += '<div class="field"><label class="lg" for="ePrice">Prix en FCFA</label><input type="number" id="ePrice" min="0" step="50" inputmode="numeric" data-e="p" value="' + (it.p == null ? "" : it.p) + '"></div>';
+    h += '<label class="opt"><span><input type="checkbox" id="eOn"' + (it.off ? '' : ' checked') + '>Disponible</span><span class="pr">sinon « Indisponible » s\'affiche</span></label>';
+    if (custom) h += '<button type="button" class="btn sm ghost" data-act="delcustom" style="align-self:flex-start">Supprimer ce plat</button>';
+    else h += '<label class="opt"><span><input type="checkbox" id="eShow"' + (it.hide ? '' : ' checked') + '>Afficher dans le menu</span></label>';
+    return h + '<p class="muted small">Les clients voient les changements après « Enregistrer et publier ».</p>';
+  }
+  function shrink(file, max) {
+    return new Promise(function (res, rej) {
+      var img = new Image(), url = URL.createObjectURL(file);
+      img.onload = function () {
+        var r = Math.min(1, (max || 900) / Math.max(img.width, img.height)), cv = document.createElement("canvas");
+        cv.width = Math.round(img.width * r); cv.height = Math.round(img.height * r);
+        var cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height); cx.drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+        cv.toBlob(function (b) { b ? res(b) : rej(new Error("blob")); }, "image/jpeg", 0.82);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); rej(new Error("image")); };
+      img.src = url;
+    });
+  }
+  function upImg(file, max) { return shrink(file, max).then(function (b) { return ASSETS.upload(b); }).then(function (r) { return r.id; }); }
+  function upVid(file) {
+    if (file.size > 20 * 1024 * 1024) return Promise.reject({ code: "too_large" });
+    var type = !file.type || file.type === "video/quicktime" ? "video/mp4" : file.type;
+    return ASSETS.upload(file, { type: type }).then(function (r) { return r.id; });
+  }
+  function pickAd(file) {
+    if (!ASSETS) { toast("L'envoi n'est pas disponible"); return; }
+    var vid = /^video\//.test(file.type) || /\.(mp4|mov|webm)$/i.test(file.name || ""); toast("Envoi en cours…");
+    (vid ? upVid(file) : upImg(file, 1280)).then(function (id) {
+      ADM.ads.push({ id: "a" + Date.now().toString(36), k: vid ? "vid" : "img", m: id, after: "tacos", cap: "", on: true });
+      toast("Ajouté. Pensez à enregistrer."); if (S.view === "admin" && S.tab === "ads") renderSheet();
+    }).catch(function (e) { toast(e && e.code === "too_large" ? "Fichier trop lourd (20 Mo maximum)" : e && e.code === "unsupported_type" ? "Ce format n'est pas accepté (mp4, webm, jpg, png)" : "L'envoi a échoué"); });
+  }
+  function pickLoyPhoto(file) {
+    if (!ASSETS) { toast("L'envoi n'est pas disponible"); return; }
+    toast("Envoi de la photo…");
+    upImg(file, 900).then(function (id) { ADM.loy.img = id; toast("Photo ajoutée. Pensez à enregistrer."); if (S.view === "admin" && S.tab === "loy") renderSheet(); }).catch(function () { toast("La photo n'a pas pu être envoyée"); });
+  }
+  function adminAdsTab() {
+    var h = '<p class="muted small">Ajoutez une affiche ou une courte vidéo entre deux catégories du menu : promo du jour, nouveauté, message de fête. Photos seulement dans cette version.</p>';
+    h += '<div class="tools"><label class="btn sm" for="aFile">Ajouter une affiche (photo)</label><input class="file" type="file" id="aFile" accept="image/*"></div>';
+    var ads = ADM.ads || [];
+    if (!ads.length) return h + '<div class="empty">Aucune affiche pour l\'instant.</div>';
+    return h + ads.map(function (a, i) {
+      var src = blobUrl(a.m), pv = a.k === "vid" ? '<video src="' + src + '" muted playsinline preload="metadata" style="width:100%;max-height:170px;border-radius:12px;object-fit:cover"></video>' : '<img src="' + src + '" alt="" loading="lazy" style="width:100%;max-height:170px;border-radius:12px;object-fit:cover">';
+      return '<div class="ord">' + pv + '<div class="field"><label class="small muted" for="aPos' + i + '">Emplacement</label><select id="aPos' + i + '" data-ad="' + i + '" data-k="after"><option value="top"' + (a.after === "top" ? ' selected' : '') + '>Tout en haut du menu</option>' + CATS.map(function (c) { return '<option value="' + c.id + '"' + (a.after === c.id ? ' selected' : '') + '>Après les ' + c.n.toLowerCase() + '</option>'; }).join("") + '</select></div>' +
+        '<div class="field"><label class="small muted" for="aCap' + i + '">Texte sous l\'affiche (facultatif)</label><input type="text" id="aCap' + i + '" maxlength="80" data-ad="' + i + '" data-k="cap" value="' + esc(a.cap || "") + '"></div>' +
+        '<div class="acts"><label class="chk small"><input type="checkbox" data-adon="' + i + '"' + (a.on !== false ? ' checked' : '') + '>Affichée</label><label class="chk small"><input type="checkbox" data-admq="' + i + '"' + (a.mq ? ' checked' : '') + '>Texte défilant</label><button type="button" class="rm" data-act="rmad" data-i="' + i + '">Retirer</button></div></div>';
+    }).join("");
+  }
+  function adminLoyTab() {
+    var c = ADM.loy;
+    var h = '<fieldset class="grp"><legend>Cadeau de la carte</legend><label class="chk"><input type="checkbox" id="lOn"' + (c.on ? ' checked' : '') + '>Afficher la carte de fidélité aux clients</label>' +
+      '<div class="ephoto"><span class="thumb" style="--h:30">' + (c.img ? '<img src=\"' + blobUrl(c.img) + '\" alt="">' : GIFT) + '</span><div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start"><label class="btn sm ghost" for="lFile">' + (c.img ? 'Changer la photo' : 'Ajouter une photo') + '</label><input class="file" type="file" id="lFile" accept="image/*">' + (c.img ? '<button type="button" class="rm" data-act="rmloyimg">Retirer la photo</button>' : '') + '</div></div>' +
+      '<div class="field"><label class="lg" for="lTitle">Le cadeau</label><input type="text" id="lTitle" data-l="title" maxlength="70" value="' + esc(c.title) + '"></div>' +
+      '<div class="field"><label class="lg" for="lDesc">Précision (facultatif)</label><input type="text" id="lDesc" data-l="desc" maxlength="100" placeholder="Une pizza moyenne et deux boissons" value="' + esc(c.desc) + '"></div>' +
+      '<div class="field"><label class="lg" for="lStamps">Commandes livrées avant le cadeau</label><input type="number" id="lStamps" data-l="stamps" min="2" max="12" inputmode="numeric" value="' + c.stamps + '"></div></fieldset>';
+    return h + '<div class="grp"><span class="lg">Clients fidèles (du plus au moins de commandes)</span><div id="loyList" style="display:flex;flex-direction:column;gap:12px">' + loyListHTML() + '</div></div>';
+  }
+  function pickPhoto(file) {
+    if (!ASSETS) { toast("L'envoi de photos n'est pas disponible"); return; }
+    var id = S.edit; toast("Envoi de la photo…");
+    shrink(file).then(function (b) { return ASSETS.upload(b); }).then(function (r) {
+      tgt(id).img = r.id; toast("Photo ajoutée. Pensez à enregistrer."); if (S.view === "admin" && S.edit === id) renderSheet();
+    }).catch(function () { toast("La photo n'a pas pu être envoyée"); });
+  }
+  function adminHTML() {
+    var tabs = [["orders", "Commandes"], ["menu", "Menu"], ["promo", "Promos"], ["ads", "Affiches"], ["loy", "Fidélité"], ["scr", "Gratter"], ["fb", "Avis"], ["ui", "Réglages"], ["zones", "Livraison"]];
+    var h = head("Administration") + '<div class="tabs" role="tablist">' + tabs.map(function (t) {
+      return '<button type="button" role="tab" data-act="tab" data-t="' + t[0] + '" aria-selected="' + (S.tab === t[0]) + '">' + t[1] + '</button>';
+    }).join("") + '</div><div class="sheet-body" id="admBody">' + (S.tab === "orders" ? adminOrdersTab() : S.tab === "menu" ? adminMenuTab() : S.tab === "promo" ? adminPromoTab() : S.tab === "ads" ? adminAdsTab() : S.tab === "loy" ? adminLoyTab() : S.tab === "scr" ? adminScrTab() : S.tab === "fb" ? adminFbTab() : S.tab === "ui" ? adminUiTab() : adminZonesTab()) + '</div>';
+    if (S.tab !== "orders" && S.tab !== "fb") h += '<div class="sheet-foot"><button type="button" class="btn center" data-act="save">Enregistrer et publier</button></div>';
+    return h;
+  }
+  function refreshOrders() {
+    var n = ORDERS.filter(function (o) { var s = STATS[o.no]; return !s || s.s === "recue"; }).length;
+    $("admCnt").hidden = n === 0; $("admCnt").textContent = n;
+    refreshHist();
+    if (S.view === "admin" && S.tab === "orders" && $("ordList")) $("ordList").innerHTML = ordersHTML();
+    refreshLoy();
+  }
+
+  function renderSheet() {
+    var v = S.view;
+    sheet.innerHTML = v === "product" ? productHTML() : v === "cart" ? cartHTML() : v === "checkout" ? checkoutHTML() : v === "admin" ? adminHTML() : v === "loy" ? loyHTML() : v === "hist" ? histHTML() : v === "scratch" ? scratchHTML() : v === "contact" ? contactHTML() : doneHTML();
+    if (v === "product") updAdd();
+    if (v === "scratch") initScratch();
+    if (v === "done" && S.order.sent) {
+      updStat((STATS[S.order.o.no] && STATS[S.order.o.no].s) || "recue");
+      try { statUnsub = DB.doc("status/" + S.order.o.no).onSnapshot(function (s) { updStat(s.exists && s.data().s ? s.data().s : "recue"); }, function () {}); } catch (e) {}
+    }
+    sheet.scrollTop = 0;
+  }
+
+  function openProduct(id) { S.sel = { it: find(id), size: 0, extras: [], qty: 1 }; showSheet("product"); }
+
+  function addToCart() {
+    var s = S.sel, it = s.it, note = ($("pNote").value || "").trim(), p = promoOf(it.id);
+    var parts = []; if (it.sizes) parts.push(it.sizes[s.size][0]);
+    s.extras.slice().sort(function (a, b) { return a - b; }).forEach(function (k) { parts.push(it.ex[k][0]); });
+    var detail = parts.join(", "), unit = selUnit(), key = it.id + "|" + detail + "|" + note + "|" + unit;
+    var ex = S.cart.filter(function (l) { return l.key === key; })[0];
+    if (ex) ex.qty += s.qty; else S.cart.push({ key: key, id: it.id, name: it.n, detail: detail, note: note, unit: unit, qty: s.qty, promo: p ? p.pct : 0 });
+    persistCart(); renderBar(); closeSheet(); toast(it.n + " ajouté");
+  }
+
+  // Commandes
+  function newNo() { return "T-" + String(Date.now()).slice(-5) + Math.floor(10 + Math.random() * 90); }
+  function buildOrder() {
+    var f = fee(), sub = subtotal();
+    var o = { no: newNo(), at: Date.now(), name: S.name.trim(), phone: S.phone.trim(), mode: S.mode, zone: S.mode === "Livraison" ? S.zone : "", addr: S.mode === "Livraison" ? S.addr.trim() : "", pay: S.pay,
+      lines: S.cart.map(function (l) { return { q: l.qty, n: l.name, d: l.detail, note: l.note, u: l.unit }; }), sub: sub, fee: f, total: sub - discAmt() + f };
+    if (S.cp) o.cp = { code: S.cp.code, l: S.cp.l, k: S.cp.k, v: S.cp.k === "disc" ? discAmt() : 0 };
+    return o;
+  }
+  function orderText(o) {
+    var t = "Commande TOLLEST " + o.no + "\nNom : " + o.name + "\nTéléphone : " + o.phone + "\nMode : " + o.mode + (o.mode === "Livraison" ? " Yango — " + o.zone : "") + "\n";
+    if (o.addr) t += "Adresse : " + o.addr + "\n";
+    t += "Paiement : " + o.pay + "\n\n";
+    o.lines.forEach(function (l) { t += l.q + " × " + l.n + (l.d ? " (" + l.d + ")" : "") + " — " + money(l.u * l.q) + (l.note ? "\n   Remarque : " + l.note : "") + "\n"; });
+    return t + "\nSous-total : " + money(o.sub) + (o.cp ? "\nCode " + o.cp.code + " : " + (o.cp.k === "disc" ? "− " + money(o.cp.v) : o.cp.l) : "") + (o.mode === "Livraison" ? "\nLivraison : " + money(o.fee) : "") + "\nTotal : " + money(o.total);
+  }
+  function saveOrderDb(o) {
+    var ref = DB.doc("orders/" + ME);
+    return ref.get().then(function (snap) {
+      var list = (snap.exists && snap.data().list) || [];
+      list = list.slice(-49); list.push(o);
+      return ref.set({ list: list });
+    });
+  }
+
+  function submit() {
+    if (S.busy) return;
+    var digits = S.phone.replace(/\D/g, ""), err = "", focus = "";
+    if (!S.name.trim()) { err = "Indiquez votre nom."; focus = "cName"; }
+    else if (digits.length < 8) { err = "Indiquez un numéro de téléphone valide."; focus = "cPhone"; }
+    else if (S.mode === "Livraison" && !S.zone) { err = "Choisissez votre quartier de livraison."; focus = "cZone"; }
+    var sh = SH();
+    if (!err && !shopOpen()) { err = shopMsg(); focus = "subBtn"; }
+    else if (!err && Number(sh.min) > 0 && subtotal() < Number(sh.min)) { err = "Commande minimum : " + money(Number(sh.min)) + "."; focus = "subBtn"; }
+    else if (!err && S.cp && S.cp.ph !== pkey(S.phone)) { err = "Ce code est lié à un autre numéro. Retirez-le ou corrigez le numéro."; focus = "cCode"; }
+    if (err) { $("err").textContent = err; $(focus).focus(); return; }
+    var o = buildOrder(); S.order = { o: o, text: orderText(o), sent: false, err: "" };
+    var finish = function () { S.cart = []; S.cp = null; S.cpErr = ""; persistCart(); HIST0.push(o); lsSet("tollest.hist", HIST0.slice(-20)); renderBar(); S.busy = false; showSheet("done"); };
+    if (DB && ME && CAN_WRITE !== false) {
+      S.busy = true; $("subBtn").disabled = true; $("subBtn").textContent = "Envoi…";
+      var cpRef = S.cp ? DB.doc("coupons/" + S.cp.code) : null;
+      var useCp = cpRef ? cpRef.get().then(function (c) { if (!c.exists || c.data().used) throw new Error("used"); return cpRef.update({ used: true, no: o.no, ua: Date.now() }); }) : Promise.resolve();
+      useCp.then(function () { return saveOrderDb(o); }).then(function () { S.order.sent = true; finish(); }, function (er) {
+        if (er && er.message === "used") { S.busy = false; S.cp = null; S.cpErr = "Ce code a déjà été utilisé."; showSheet("checkout"); $("err").textContent = "Le code n'est plus valable. Votre commande n'a pas été envoyée, vérifiez le total."; return; }
+        S.order.err = "L'envoi automatique a échoué. Envoyez le récapitulatif au restaurant."; finish();
+      });
+    } else finish();
+  }
+
+  function copyRecap() {
+    var btn = $("copyBtn"), pre = $("recap");
+    function sel() { var r = document.createRange(); r.selectNodeContents(pre); var g = window.getSelection(); g.removeAllRanges(); g.addRange(r); btn.textContent = "Texte sélectionné, copiez-le"; }
+    try { navigator.clipboard.writeText(S.order.text).then(function () { btn.textContent = "Copié"; }, sel); } catch (e) { sel(); }
+  }
+
+  // Actions administrateur
+  function setStatus(no, s) {
+    if (!DB) return;
+    var pc = (STATS[no] && STATS[no].pc) ? 1 : 0, st = { s: s, t: Date.now() }; if (pc) st.pc = 1;
+    STATS[no] = st; refreshOrders();
+    DB.doc("status/" + no).set(st).then(function () {
+      if (s === "livree") { var o = ORDERS.filter(function (x) { return x.no === no; })[0]; if (o) creditLoyalty(o); }
+    }, function () { toast("Le statut n'a pas pu être enregistré"); });
+  }
+  function testOrder() {
+    if (!DB || !ME) { toast("Base de données indisponible"); return; }
+    var pick = function () { return ITEMS_EFF[Math.floor(Math.random() * ITEMS_EFF.length)]; }, a = pick(), b = pick(), z = zones()[0];
+    var ua = disc(rawFrom(a), a.id), ub = disc(rawFrom(b), b.id), sub = ua * 2 + ub;
+    var o = { no: newNo(), at: Date.now(), name: "Client test", phone: TEST_PHONE, mode: "Livraison", zone: z.n, addr: "Près du carrefour, portail vert", pay: "Orange Money", test: true,
+      lines: [{ q: 2, n: a.n, d: a.sizes ? a.sizes[0][0] : "", note: "", u: ua }, { q: 1, n: b.n, d: b.sizes ? b.sizes[0][0] : "", note: "Sans piment", u: ub }], sub: sub, fee: z.f, total: sub + z.f };
+    saveOrderDb(o).then(function () { toast("Commande test envoyée"); }, function () { toast("Échec de la commande test"); });
+  }
+  function delTests() {
+    if (!DB || !ME) return;
+    var ref = DB.doc("orders/" + ME);
+    DB.doc("loyalty/" + pkey(TEST_PHONE)).delete().catch(function () {});
+    ref.get().then(function (snap) {
+      var list = (snap.exists && snap.data().list) || [], keep = list.filter(function (o) { return !o.test; });
+      if (keep.length === list.length) { toast("Aucun test à supprimer"); return; }
+      return ref.set({ list: keep }).then(function () { toast("Tests supprimés"); });
+    }).catch(function () { toast("Suppression impossible"); });
+  }
+  function saveSettings() {
+    if (!DB) return;
+    ADM.banner.text = (ADM.banner.text || "").trim();
+    ADM.zones = (ADM.zones || []).filter(function (z) { return (z.n || "").trim(); }).map(function (z) { return { n: z.n.trim(), f: Math.max(0, Math.round(Number(z.f) || 0)) }; });
+    ADM.custom = (ADM.custom || []).filter(function (c) { return (c.n || "").trim(); });
+    ADM.ads = (ADM.ads || []).filter(function (a) { return a && a.m; });
+    ADM.loy = loyCfg(ADM); ADM.loy.title = ADM.loy.title.trim();
+    cleanAdm(ADM);
+    if (S.edit && !ADM.custom.concat(ITEMS).some(function (x) { return x.id === S.edit; })) S.edit = null;
+    var data = clone(ADM);
+    DB.doc("settings/main").set(data).then(function () { SET = data; applySettings(); toast("Enregistré, visible chez les clients"); }, function () { toast("L'enregistrement a échoué"); });
+  }
+
+  // Événements
+  $("chips").addEventListener("click", function (e) { var b = e.target.closest("[data-cat]"); if (!b) return; S.cat = b.getAttribute("data-cat"); renderChips(); renderMenu(); window.scrollTo(0, 0); });
+  $("menu").addEventListener("click", function (e) {
+    var v = e.target.closest(".advid");
+    if (v) { v.muted = !v.muted; var hint = v.parentNode.querySelector(".hint"); if (hint) hint.textContent = v.muted ? "Touchez pour le son" : "Son activé"; try { v.play(); } catch (er) {} return; }
+    var b = e.target.closest("[data-id]"); if (b) openProduct(b.getAttribute("data-id"));
+  });
+  $("openCart").addEventListener("click", function () { showSheet("cart"); });
+  $("admBtn").addEventListener("click", function () { ADM = clone(SET); if (!ADM.banner) ADM.banner = { on: false, text: "" }; if (!ADM.promos) ADM.promos = {}; if (!ADM.zones || !ADM.zones.length) ADM.zones = clone(DEF_ZONES); if (!ADM.ov) ADM.ov = {}; if (!ADM.custom) ADM.custom = []; if (!ADM.ads) ADM.ads = []; ADM.loy = loyCfg(ADM); normAdm(ADM); S.tab = "orders"; S.edit = null; S.openCust = null; showSheet("admin"); });
+  $("histBtn").addEventListener("click", function () { showSheet("hist"); });
+  $("giftBtn").addEventListener("click", function () { var o = myOrders().filter(function (x) { return canScratch(x) && !(x.sc && x.sc.rv); })[0]; if (o) openScratch(o.no); });
+  $("ctBtn").addEventListener("click", function () { showSheet("contact"); });
+  $("loyBtn").addEventListener("click", function () { if (!S.loyPhone) S.loyPhone = S.phone || (lsGet("tollest.loyphone") || ""); showSheet("loy"); });
+  scrim.addEventListener("click", closeSheet);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sheet.hidden) closeSheet(); });
+
+  sheet.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-act]"); if (!b) return;
+    var a = b.getAttribute("data-act"), d = parseInt(b.getAttribute("data-d"), 10), i = parseInt(b.getAttribute("data-i"), 10);
+    if (a === "close") closeSheet();
+    else if (a === "pq") { S.sel.qty = Math.max(1, Math.min(20, S.sel.qty + d)); updAdd(); }
+    else if (a === "add") addToCart();
+    else if (a === "cq") { S.cart[i].qty = Math.max(1, Math.min(50, S.cart[i].qty + d)); persistCart(); renderBar(); renderSheet(); }
+    else if (a === "rm") { S.cart.splice(i, 1); persistCart(); renderBar(); renderSheet(); }
+    else if (a === "tocheckout") showSheet("checkout");
+    else if (a === "tocart") showSheet("cart");
+    else if (a === "submit") submit();
+    else if (a === "copy") copyRecap();
+    else if (a === "tab") { S.tab = b.getAttribute("data-t"); renderSheet(); }
+    else if (a === "next") setStatus(b.getAttribute("data-no"), b.getAttribute("data-s"));
+    else if (a === "testorder") testOrder();
+    else if (a === "deltests") delTests();
+    else if (a === "emo") { var t = $("bText"); t.value = (t.value + b.getAttribute("data-e")).slice(0, 120); ADM.banner.text = t.value; t.focus(); }
+    else if (a === "rmpromo") { delete ADM.promos[b.getAttribute("data-id")]; renderSheet(); }
+    else if (a === "addpromo") {
+      var pct = Math.round(Number($("pPct").value));
+      if (!(pct >= 1 && pct <= 90)) { $("pErr").textContent = "Entrez une réduction entre 1 et 90 %."; $("pPct").focus(); return; }
+      ADM.promos[$("pItem").value] = { pct: pct, until: $("pUntil").value || "", label: ($("pLabel").value || "").trim() };
+      renderSheet();
+    }
+    else if (a === "addzone") { ADM.zones.push({ n: "", f: 1500 }); renderSheet(); var zs = sheet.querySelectorAll('[data-k="n"]'); if (zs.length) zs[zs.length - 1].focus(); }
+    else if (a === "rmzone") { ADM.zones.splice(i, 1); renderSheet(); }
+    else if (a === "save") saveSettings();
+    else if (a === "newdish") { var nid = "x" + Date.now().toString(36); ADM.custom.push({ id: nid, c: "chawarma", n: "", d: "", p: 2000 }); S.edit = nid; renderSheet(); var en = $("eName"); if (en) en.focus(); }
+    else if (a === "editdish") { S.edit = b.getAttribute("data-id"); renderSheet(); }
+    else if (a === "enddish") { S.edit = null; renderSheet(); }
+    else if (a === "delcustom") { ADM.custom = ADM.custom.filter(function (c) { return c.id !== S.edit; }); S.edit = null; renderSheet(); }
+    else if (a === "rmphoto") { tgt().img = ""; renderSheet(); }
+    else if (a === "rmad") { ADM.ads.splice(i, 1); renderSheet(); }
+    else if (a === "rmloyimg") { ADM.loy.img = ""; renderSheet(); }
+    else if (a === "claim") claimGift(b.getAttribute("data-k"));
+    else if (a === "hist") { var hk = b.getAttribute("data-k"); S.openCust = S.openCust === hk ? null : hk; refreshLoy(); }
+    else if (a === "toloy") { S.loyPhone = S.order ? S.order.o.phone : S.loyPhone; showSheet("loy"); }
+    else if (a === "tohist") showSheet("hist");
+    else if (a === "paid") markPaid(b.getAttribute("data-no"));
+    else if (a === "reorder") reorder(b.getAttribute("data-no"));
+    else if (a === "confirmpay") confirmPay(b.getAttribute("data-no"));
+    else if (a === "logout") { if (window.__logout) window.__logout(); }
+    else if (a === "scratch") openScratch(b.getAttribute("data-no"));
+    else if (a === "screveal") revealNow();
+    else if (a === "copycode") copyText(b.getAttribute("data-c"), b.parentNode.querySelector(".code"));
+    else if (a === "copytxt") copyText(b.getAttribute("data-t"), b.closest(".ctrow").querySelector(".sel"));
+    else if (a === "fbe") { var fn = b.getAttribute("data-no"), fe = b.getAttribute("data-e"); S.fbe[fn] = S.fbe[fn] === fe ? "" : fe; rerender(); }
+    else if (a === "fbsend") sendFb(b.getAttribute("data-no"));
+    else if (a === "applycode") applyCode();
+    else if (a === "rmcode") { S.cp = null; S.cpErr = ""; $("cpMsg").innerHTML = ""; $("cCode").value = ""; $("sum").innerHTML = sumHTML(); }
+    else if (a === "mqc") { var mc = b.getAttribute("data-c"), ix = ADM.banner.cols.indexOf(mc); if (ix >= 0) ADM.banner.cols.splice(ix, 1); else ADM.banner.cols.push(mc); renderSheet(); }
+    else if (a === "mqbg") { var mb = b.getAttribute("data-c"); ADM.banner.bg = ADM.banner.bg === mb ? "" : mb; renderSheet(); }
+    else if (a === "preset") { var pz = PRESETS[i]; ADM.ui.heroA = pz[1]; ADM.ui.heroB = pz[2]; ADM.ui.accent = pz[3]; renderSheet(); }
+    else if (a === "bg") { ADM.ui.bg = b.getAttribute("data-c"); renderSheet(); }
+    else if (a === "resetcol") { ADM.ui.heroA = ADM.ui.heroB = ADM.ui.accent = ADM.ui.bg = ""; renderSheet(); }
+    else if (a === "rmlogo") { ADM.ui.logo = ""; renderSheet(); }
+    else if (a === "catup" || a === "catdn") { var co = catsEff(ADM, true).map(function (c) { return c.id; }), id = b.getAttribute("data-id"), p = co.indexOf(id), q = p + (a === "catup" ? -1 : 1); if (q >= 0 && q < co.length) { co.splice(q, 0, co.splice(p, 1)[0]); ADM.ui.cats = co; renderSheet(); } }
+    else if (a === "addprize") { ADM.scr.prizes.push(b.getAttribute("data-k") === "disc" ? { id: "p" + Date.now().toString(36), k: "disc", v: 500, l: "", w: 3 } : { id: "p" + Date.now().toString(36), k: "free", v: 0, l: "", w: 3 }); renderSheet(); }
+    else if (a === "rmprize") { ADM.scr.prizes.splice(i, 1); renderSheet(); }
+  });
+  sheet.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.name === "size") { S.sel.size = parseInt(t.value, 10); updAdd(); }
+    else if (t.name === "extra") { var k = parseInt(t.value, 10), at = S.sel.extras.indexOf(k); if (t.checked && at < 0) S.sel.extras.push(k); if (!t.checked && at >= 0) S.sel.extras.splice(at, 1); updAdd(); }
+    else if (t.name === "mode") { S.mode = t.value; renderSheet(); var c = sheet.querySelector('input[name="mode"]:checked'); if (c) c.focus(); }
+    else if (t.name === "pay") S.pay = t.value;
+    else if (t.name === "theme") ADM.theme = t.value;
+    else if (t.id === "bOn") ADM.banner.on = t.checked;
+    else if (t.id === "cZone") { S.zone = t.value; $("sum").innerHTML = sumHTML(); }
+    else if (t.id === "eOn") tgt().off = !t.checked;
+    else if (t.id === "eShow") tgt().hide = !t.checked;
+    else if (t.id === "eCat") { tgt().c = t.value; renderSheet(); }
+    else if (t.id === "eFile") { if (t.files && t.files[0]) pickPhoto(t.files[0]); }
+    else if (t.id === "aFile") { if (t.files && t.files[0]) pickAd(t.files[0]); }
+    else if (t.id === "lFile") { if (t.files && t.files[0]) pickLoyPhoto(t.files[0]); }
+    else if (t.id === "lOn") ADM.loy.on = t.checked;
+    else if (t.id === "bMq") { ADM.banner.mq = t.checked; renderSheet(); }
+    else if (t.id === "shOpen") ADM.shop.open = t.checked;
+    else if (t.id === "shAuto") ADM.shop.auto = t.checked;
+    else if (t.id === "uDesc") ADM.ui.desc = t.checked;
+    else if (t.id === "sOn") ADM.scr.on = t.checked;
+    else if (t.name === "lay") ADM.ui.lay = t.value;
+    else if (t.name === "rad") ADM.ui.rad = t.value;
+    else if (t.id === "uLogo") { if (t.files && t.files[0]) pickLogo(t.files[0]); }
+    else if (t.hasAttribute("data-chide")) { ADM.ui.chide[t.getAttribute("data-chide")] = !t.checked; }
+    else if (t.hasAttribute("data-admq")) { var am = ADM.ads[parseInt(t.getAttribute("data-admq"), 10)]; if (am) am.mq = t.checked; }
+    else if (t.hasAttribute("data-pz") && t.getAttribute("data-k") === "k") { ADM.scr.prizes[parseInt(t.getAttribute("data-pz"), 10)].k = t.value; renderSheet(); }
+    else if (t.hasAttribute("data-adon")) { var ai = ADM.ads[parseInt(t.getAttribute("data-adon"), 10)]; if (ai) ai.on = t.checked; }
+    else if (t.hasAttribute("data-av")) { tgt(t.getAttribute("data-av")).off = !t.checked; renderSheet(); }
+  });
+  sheet.addEventListener("input", function (e) {
+    var t = e.target;
+    if (t.hasAttribute("data-fbt")) { S.fbt[t.getAttribute("data-fbt")] = t.value; return; }
+    if (t.hasAttribute("data-u")) { ADM.ui[t.getAttribute("data-u")] = t.value; return; }
+    if (t.hasAttribute("data-sh")) { var sk = t.getAttribute("data-sh"); ADM.shop[sk] = sk === "min" ? Number(t.value) : t.value; return; }
+    if (t.hasAttribute("data-pn")) { ADM.payn[t.getAttribute("data-pn")] = t.value; return; }
+    if (t.hasAttribute("data-c")) { ADM.contact[t.getAttribute("data-c")] = t.value; return; }
+    if (t.hasAttribute("data-s")) { ADM.scr[t.getAttribute("data-s")] = Number(t.value); return; }
+    if (t.hasAttribute("data-pz")) { var pk = t.getAttribute("data-k"), pr2 = ADM.scr.prizes[parseInt(t.getAttribute("data-pz"), 10)]; if (pr2) pr2[pk] = (pk === "v" || pk === "w") ? Number(t.value) : t.value; return; }
+    if (t.id === "lPhone") { S.loyPhone = t.value; $("loyDyn").innerHTML = loyDynHTML(); lsSet("tollest.loyphone", t.value); return; }
+    if (t.hasAttribute("data-ad")) { var ad = ADM.ads[parseInt(t.getAttribute("data-ad"), 10)]; if (ad) ad[t.getAttribute("data-k")] = t.value; return; }
+    if (t.hasAttribute("data-l")) { var lk = t.getAttribute("data-l"); ADM.loy[lk] = lk === "stamps" ? Number(t.value) : t.value; return; }
+    if (t.id === "cName") S.name = t.value; else if (t.id === "cPhone") S.phone = t.value; else if (t.id === "cAddr") S.addr = t.value;
+    else if (t.id === "bText") { ADM.banner.text = t.value; var mp = $("mqPrev"); if (mp) mp.innerHTML = mqHTML(t.value || "Le meilleur reste à venir", !!ADM.banner.mq, ADM.banner.cols, ADM.banner.bg); return; }
+    else if (t.hasAttribute("data-z")) { var z = ADM.zones[parseInt(t.getAttribute("data-z"), 10)]; if (z) z[t.getAttribute("data-k")] = t.getAttribute("data-k") === "f" ? Number(t.value) : t.value; return; }
+    else if (t.hasAttribute("data-e")) { var ek = t.getAttribute("data-e"); tgt()[ek] = ek === "p" ? (t.value === "" ? "" : Number(t.value)) : t.value; return; }
+    else if (t.hasAttribute("data-sz")) { var o2 = tgt(); if (!o2.sz) o2.sz = []; o2.sz[parseInt(t.getAttribute("data-sz"), 10)] = t.value === "" ? null : Number(t.value); return; }
+    else return;
+    lsSet("tollest.cust", { name: S.name, phone: S.phone, addr: S.addr });
+  });
+
+  // Départ
+  var lastOpen = shopOpen(); setInterval(function () { var o = shopOpen(); if (o !== lastOpen) { lastOpen = o; renderMenu(); } }, 30000);
+  window.__onMedia = function () { if (!sheet.hidden && S.view === "admin") return; try { applySettings(); } catch (e) {} };
+  var hr = new Date().getHours();
+  GREET = hr >= 18 || hr < 5 ? "Bonsoir" : hr < 12 ? "Bonjour" : "Bon après-midi"; $("hello").textContent = GREET;
+  renderChips(); renderMenu(); renderBar();
+
+  // Base de données partagée (réglages, commandes) : la page reste utilisable sans elle.
+  function use(n) { try { return window.claude && window.claude.use ? window.claude.use(n) : Promise.resolve(null); } catch (e) { return Promise.resolve(null); } }
+  use("user").then(function (u) {
+    USER = u; if (!u) return;
+    return Promise.all([u.canEdit(), u.isOwner(), u.id(), u.can("data.write")]).then(function (r) { IS_ADMIN = !!(r[0] || r[1]); ME = r[2]; CAN_WRITE = r[3]; });
+  }).catch(function () {}).then(function () { return use("db"); }).then(function (db) {
+    DB = db; if (!db) return;
+    db.doc("settings/main").onSnapshot(function (s) {
+      var d = s.exists ? s.data() : null; SET = d ? Object.assign(defSet(), d) : defSet();
+      if (!SET.banner) SET.banner = { on: false, text: "" }; if (!SET.promos) SET.promos = {};
+      applySettings();
+    }, function () {});
+    db.collection("status").onSnapshot(function (snap) {
+      var was = STATS, loaded = STLOADED; STATS = {}; snap.docs.forEach(function (d) { STATS[d.id] = d.data(); }); STLOADED = true; refreshOrders(); refreshHist();
+      if (loaded) { var win = myOrders().filter(function (o) { return STATS[o.no] && STATS[o.no].s === "livree" && !(was[o.no] && was[o.no].s === "livree") && canScratch(o); })[0]; if (win) { toast("Commande livrée ! Une carte à gratter vous attend 🎁"); if (sheet.hidden || S.view === "hist" || S.view === "done") openScratch(win.no); } }
+    }, function () {});
+    if (ME) db.doc("orders/" + ME).onSnapshot(function (s) { MYDB = s.exists ? (s.data().list || []) : []; refreshHist(); }, function () {});
+    db.collection("loyalty").onSnapshot(function (snap) {
+      LOYMAP = {}; snap.docs.forEach(function (d) { LOYMAP[d.id] = d.data(); }); refreshLoy();
+    }, function () {});
+    if (IS_ADMIN) {
+      $("admBtn").hidden = false;
+      use("assets").then(function (a) { ASSETS = a; });
+      db.collection("coupons").onSnapshot(function (snap) { COUPONS = {}; snap.docs.forEach(function (d) { COUPONS[d.id] = d.data(); }); refreshOrders(); if (S.view === "admin" && S.tab === "scr" && $("cpList")) $("cpList").innerHTML = couponListHTML(); }, function () {});
+      db.collection("orders").onSnapshot(function (snap) {
+        var all = []; snap.docs.forEach(function (d) { var l = (d.data() || {}).list; if (Array.isArray(l)) l.forEach(function (o) { all.push(o); }); });
+        all.sort(function (a, b) { return b.at - a.at; }); if (ORDCOUNT !== null && all.length > ORDCOUNT) beep(); ORDCOUNT = all.length; ORDERS = all; refreshOrders();
+        if (S.view === "admin" && S.tab === "fb" && $("fbList")) $("fbList").innerHTML = fbListHTML();
+      }, function () {});
+    }
+  }).catch(function () {});
+})();
+</script>
+
+</body>
+</html>
